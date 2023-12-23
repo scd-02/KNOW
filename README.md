@@ -1,2 +1,8 @@
 # KNOW
-A Personal Super APP That lets user keep record each and every details of their daily life and need.
+A Personal Super APP lets users record every detail of their daily life and needs.
+
+## First Target:
+1. Understand the workflow of the project and make some designs using online tools.
+2. Figure out the Tech Stack.
+3. Figure out the implementation chart.
+4. Figure out the Execution chart.
