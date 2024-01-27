@@ -1,6 +1,6 @@
 {
-    "name": "know_app",
-    "short_name": "know_app",
+    "name": "know",
+    "short_name": "know",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
