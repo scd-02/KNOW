@@ -1,4 +1,4 @@
-# know_app
+# know
 
 A new Flutter project.
 
