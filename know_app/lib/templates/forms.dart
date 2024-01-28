@@ -1,16 +1,38 @@
 // Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:know/components/formsPage/checkbox.dart';
+import 'package:know/components/formsPage/datepicker.dart';
+import 'package:know/components/formsPage/textinput.dart';
+import 'package:know/components/formsPage/timepicker.dart';
 import 'package:know/pages/home.dart';
-import 'package:know/components/search_bar.dart' as search_bar;
 
 // Define a stateless widget for the TravelPage
-class FormsPage extends StatelessWidget {
+class FormsPage extends StatefulWidget {
   // Constructor for the TravelPage widget
   const FormsPage({super.key});
+  State<StatefulWidget> createState() {
+    return FormsPageState();
+  }
+}
 
-  // Build method to create the widget's UI
-  @override
+class FormsPageState extends State<FormsPage> {
+  TimeOfDay time = const TimeOfDay(hour: 10, minute: 30);
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController textInputController = TextEditingController();
+  bool? check = false;
+  void SetCheck(bool? c) {
+    setState(() {
+      check = c;
+    });
+  }
+
+  void SetTime(TimeOfDay t) {
+    setState(() {
+      time = t;
+    });
+  }
+
   Widget build(BuildContext context) {
     // Scaffold widget for the overall structure of the page
     return Scaffold(
@@ -79,8 +101,33 @@ class FormsPage extends StatelessWidget {
         ],
       ),
       // Body of the page
-      body: const Column(
-        children: [],
+      body: Column(
+        children: [
+          Row(
+            children: [
+              const Text("Enter Text : "),
+              TextInput(textInputController, "Place Holder value"),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Set Time : "),
+              TimePicker(SetTime),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Set Date : "),
+              DatePicker(_dateController),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Check the box : "),
+              CheckBox(SetCheck),
+            ],
+          ),
+        ],
       ),
       // Location of the floating action button on the screen
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
