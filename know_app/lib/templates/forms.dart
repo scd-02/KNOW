@@ -2,16 +2,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:know/pages/home.dart';
-import 'package:know/components/search_bar.dart' as search_bar;
 
 // Define a stateless widget for the TravelPage
-class FormsPage extends StatelessWidget {
+class FormsPage extends StatefulWidget {
   // Constructor for the TravelPage widget
   const FormsPage({super.key});
+  State<StatefulWidget> createState() {
+    return FormsPageState();
+  }
+}
 
-  // Build method to create the widget's UI
-  @override
+class FormsPageState extends State<FormsPage> {
+  TimeOfDay time = const TimeOfDay(hour: 10, minute: 30);
+
   Widget build(BuildContext context) {
+    final hours = time.hour.toString().padLeft(2, '0');
+    final minutes = time.minute.toString().padLeft(2, '0');
     // Scaffold widget for the overall structure of the page
     return Scaffold(
       // AppBar at the top of the page
@@ -79,8 +85,40 @@ class FormsPage extends StatelessWidget {
         ],
       ),
       // Body of the page
-      body: const Column(
-        children: [],
+      body: Column(
+        children: [
+          const Row(
+            children: [
+              Text("Enter Text : "),
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Enter your email or username'),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Set Time : "),
+              Text(
+                '$hours : $minutes',
+                style: const TextStyle(fontSize: 32),
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    TimeOfDay? newTime = await showTimePicker(
+                        context: context, initialTime: time);
+                    if (newTime == null) return;
+                    setState(() {
+                      time = newTime;
+                    });
+                  },
+                  child: Text("Select Time"))
+            ],
+          ),
+        ],
       ),
       // Location of the floating action button on the screen
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
