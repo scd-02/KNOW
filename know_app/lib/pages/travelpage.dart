@@ -1,6 +1,9 @@
 // Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'home.dart';
+import 'search_bar.dart' as search_bar;
+import '../components/floating_action_button.dart';
 import 'package:know/pages/home.dart';
 import 'package:know/components/search_bar.dart' as search_bar;
 
@@ -34,7 +37,7 @@ class TravelPage extends StatelessWidget {
             alignment: Alignment.center,
             // Decoration for the leading container
             decoration: BoxDecoration(
-                color: Color(0xffF7F8F8),
+                color: const Color(0xffF7F8F8),
                 borderRadius: BorderRadius.circular(10)),
             // GestureDetector for handling taps on the leading widget
             child: GestureDetector(
@@ -91,32 +94,16 @@ class TravelPage extends StatelessWidget {
           // ),
         ],
       ),
+
       // Location of the floating action button on the screen
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       // Configuration for the floating action button
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(left: 15.0),
+      floatingActionButton: const Padding(
+        padding: EdgeInsets.only(left: 15.0),
         child: Align(
           alignment: Alignment.bottomLeft,
-          // Widget for the floating action button
-          child: SizedBox(
-            height: 50,
-            width: 50,
-            // Elevated button for the floating action button
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(10),
-              ),
-              // SVG icon for the floating action button
-              child: SvgPicture.asset(
-                'assets/icons/plus.svg',
-                height: 30,
-                width: 30,
-              ),
-            ),
-          ),
+          // Use the MyFloatingActionButton widget
+          child: MyFloatingActionButton(),
         ),
       ),
     );
