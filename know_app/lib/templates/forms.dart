@@ -1,6 +1,10 @@
 // Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:know/components/formsPage/checkbox.dart';
+import 'package:know/components/formsPage/datepicker.dart';
+import 'package:know/components/formsPage/textinput.dart';
+import 'package:know/components/formsPage/timepicker.dart';
 import 'package:know/pages/home.dart';
 
 // Define a stateless widget for the TravelPage
@@ -14,10 +18,22 @@ class FormsPage extends StatefulWidget {
 
 class FormsPageState extends State<FormsPage> {
   TimeOfDay time = const TimeOfDay(hour: 10, minute: 30);
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController textInputController = TextEditingController();
+  bool? check = false;
+  void SetCheck(bool? c) {
+    setState(() {
+      check = c;
+    });
+  }
+
+  void SetTime(TimeOfDay t) {
+    setState(() {
+      time = t;
+    });
+  }
 
   Widget build(BuildContext context) {
-    final hours = time.hour.toString().padLeft(2, '0');
-    final minutes = time.minute.toString().padLeft(2, '0');
     // Scaffold widget for the overall structure of the page
     return Scaffold(
       // AppBar at the top of the page
@@ -87,35 +103,28 @@ class FormsPageState extends State<FormsPage> {
       // Body of the page
       body: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              Text("Enter Text : "),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Enter your email or username'),
-                ),
-              ),
+              const Text("Enter Text : "),
+              TextInput(textInputController, "Place Holder value"),
             ],
           ),
           Row(
             children: [
               const Text("Set Time : "),
-              Text(
-                '$hours : $minutes',
-                style: const TextStyle(fontSize: 32),
-              ),
-              ElevatedButton(
-                  onPressed: () async {
-                    TimeOfDay? newTime = await showTimePicker(
-                        context: context, initialTime: time);
-                    if (newTime == null) return;
-                    setState(() {
-                      time = newTime;
-                    });
-                  },
-                  child: Text("Select Time"))
+              TimePicker(SetTime),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Set Date : "),
+              DatePicker(_dateController),
+            ],
+          ),
+          Row(
+            children: [
+              const Text("Check the box : "),
+              CheckBox(SetCheck),
             ],
           ),
         ],
