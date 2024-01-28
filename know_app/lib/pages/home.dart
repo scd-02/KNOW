@@ -1,6 +1,8 @@
 // Importing necessary packages and libraries
 import 'package:flutter/material.dart';
 import 'package:know/pages/travelpage.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:know/templates/forms.dart';
 
 // Definition of a stateless widget for the HomePage
 class HomePage extends StatelessWidget {
@@ -50,6 +52,17 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
+      body: Column(children: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FormsPage()),
+            );
+          },
+          child: Text("Form Page"),
+        )
+      ]),
     );
   }
 }

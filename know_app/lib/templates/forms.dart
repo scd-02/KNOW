@@ -5,9 +5,9 @@ import 'package:know/pages/home.dart';
 import 'package:know/components/search_bar.dart' as search_bar;
 
 // Define a stateless widget for the TravelPage
-class TravelPage extends StatelessWidget {
+class FormsPage extends StatelessWidget {
   // Constructor for the TravelPage widget
-  const TravelPage({super.key});
+  const FormsPage({super.key});
 
   // Build method to create the widget's UI
   @override
@@ -62,7 +62,7 @@ class TravelPage extends StatelessWidget {
                 // Navigate to the TravelPage when the profile image is clicked
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TravelPage()),
+                  MaterialPageRoute(builder: (context) => const HomePage()),
                 );
               },
               // Circular profile image in the app bar
@@ -80,16 +80,7 @@ class TravelPage extends StatelessWidget {
       ),
       // Body of the page
       body: const Column(
-        children: [
-          // Custom search bar widget
-          search_bar.SearchBar(),
-          // Uncomment the lines below to add more content to the body
-          // Expanded(
-          //   child: Center(
-          //     child: Text('Search results will be displayed here!'),
-          //   ),
-          // ),
-        ],
+        children: [],
       ),
       // Location of the floating action button on the screen
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
