@@ -2,10 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'home.dart';
-import 'search_bar.dart' as search_bar;
-import '../components/floating_action_button.dart';
-import 'package:know/pages/home.dart';
 import 'package:know/components/search_bar.dart' as search_bar;
+import 'package:know/components/floating_action_button.dart';
 
 // Define a stateless widget for the TravelPage
 class TravelPage extends StatelessWidget {
