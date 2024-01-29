@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:know/pages/home.dart';
-import 'package:know/templates/forms.dart';
+import 'package:know/components/commonWidgets/app_bar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({
@@ -24,30 +22,9 @@ class ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       //AppBar at the top of the screen
-      appBar: AppBar(
-        //Back arrow Button
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/arrow-left.svg',
-            height: 20,
-            width: 20,
-          ),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const HomePage()));
-          },
-        ),
-        title: const Text('KNOW Profile',
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold)),
-        //background color of the App bar
-        backgroundColor: Colors.white,
-        //Elevation to remove shadow in the app bar
-        elevation: 0.0,
-        //Center the title in the app bar
-        centerTitle: true,
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: CustomAppBar(title: 'Profile'),
       ),
       body: Center(
         child: SafeArea(
@@ -59,7 +36,7 @@ class ProfilePageState extends State<ProfilePage> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: CircleAvatar(
-                  radius: 8,
+                  radius: 80,
                   backgroundImage: AssetImage(
                     'assets/images/2141010002.jpg',
                   ),
@@ -108,10 +85,10 @@ class ProfilePageState extends State<ProfilePage> {
                 onPressed: () async {
                   // Navigate to the form page and wait for the result
 
-                  var result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const FormsPage()));
+                  // var result = await Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) => const FormsPage()));
 
                   // Uncomment these line when formpage is completed
 

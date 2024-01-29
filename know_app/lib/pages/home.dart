@@ -1,6 +1,5 @@
 // Importing necessary packages and libraries
 import 'package:flutter/material.dart';
-import 'package:know/pages/profilepage.dart';
 import 'package:know/pages/travelpage.dart';
 import 'package:know/pages/billspage.dart';
 import 'package:know/pages/medicalpage.dart';
@@ -17,8 +16,6 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Scaffold widget for the overall structure of the page
     return Scaffold(
-
-
       // AppBar at the top of the page
 
       appBar: const PreferredSize(
@@ -55,7 +52,6 @@ class HomePage extends StatelessWidget {
           child: const Text("Bills Page"),
         ),
         ElevatedButton(
-
           onPressed: () {
             Navigator.push(
               context,
@@ -63,16 +59,6 @@ class HomePage extends StatelessWidget {
             );
           },
           child: const Text("Medical Page"),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
-            );
-          },
-          child: const Text("Profile Page"),
-          
         ),
       ]),
     );
