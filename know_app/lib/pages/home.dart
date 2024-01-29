@@ -16,15 +16,12 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Scaffold widget for the overall structure of the page
     return Scaffold(
-
-
       // AppBar at the top of the page
-      
+
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(title: 'Know App'),
       ),
-
 
       body: Column(children: [
         ElevatedButton(

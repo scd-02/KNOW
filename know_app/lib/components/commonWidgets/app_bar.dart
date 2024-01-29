@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:know/pages/home.dart';
-import 'package:know/pages/travelpage.dart';
+import 'package:know/pages/profilepage.dart';
 
 class CustomAppBar extends StatelessWidget {
   final String title;
@@ -59,7 +59,7 @@ class CustomAppBar extends StatelessWidget {
               // Navigate to the TravelPage when the profile image is clicked
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const TravelPage()),
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
               );
             },
             // Circular profile image in the app bar
