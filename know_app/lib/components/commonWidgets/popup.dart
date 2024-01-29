@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ShowPopup extends StatelessWidget {
-  const ShowPopup({super.key});
+  final String btn1;
+  final String btn2;
+  const ShowPopup({
+    Key? key,
+    required this.btn1,
+    required this.btn2,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +38,9 @@ class ShowPopup extends StatelessWidget {
                         vertical: 10, horizontal: 25),
                     //side: const BorderSide(color: Colors.black, width: 0.8),
                   ),
-                  child: const Text(
-                    'Hotel Bookings',
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    btn1,
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -45,9 +51,9 @@ class ShowPopup extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         vertical: 10, horizontal: 25),
                   ),
-                  child: const Text(
-                    'Transport Bookings',
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    btn2,
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ],

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:know/pages/home.dart';
-import 'package:know/components/search_bar.dart' as search_bar;
+import 'package:know/components/commonWidgets/search_bar.dart' as search_bar;
 
 // Define a stateless widget for the TravelPage
 class SamplePage extends StatelessWidget {

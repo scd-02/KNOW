@@ -6,10 +6,10 @@ import 'package:know/components/commonWidgets/search_bar.dart' as search_bar;
 import 'package:know/components/commonWidgets/floating_action_button.dart';
 import 'package:know/components/commonWidgets/app_bar.dart';
 
-// Define a stateless widget for the TravelPage
-class TravelPage extends StatelessWidget {
-  // Constructor for the TravelPage widget
-  const TravelPage({super.key});
+// Define a stateless widget for the BillsPage
+class BillsPage extends StatelessWidget {
+  // Constructor for the BillsPage widget
+  const BillsPage({super.key});
 
   // Build method to create the widget's UI
   @override
@@ -19,7 +19,7 @@ class TravelPage extends StatelessWidget {
       // AppBar at the top of the page
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(title: 'Travels'),
+        child: CustomAppBar(title: 'Bills'),
       ),
       // Body of the page
       body: Column(
@@ -44,8 +44,8 @@ class TravelPage extends StatelessWidget {
           alignment: Alignment.bottomLeft,
           // Use the MyFloatingActionButton widget
           child: MyFloatingActionButton(
-            btn1: 'Hotel Bookings',
-            btn2: 'Transport Bookings',
+            btn1: 'Update Balance',
+            btn2: 'Add Expense',
           ),
         ),
       ),

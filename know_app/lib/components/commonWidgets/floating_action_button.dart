@@ -1,11 +1,16 @@
-// floating_action_button.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../components/popup.dart';
+import 'popup.dart';
 
 class MyFloatingActionButton extends StatelessWidget {
-  const MyFloatingActionButton({Key? key}) : super(key: key);
+  final String btn1;
+  final String btn2;
+
+  const MyFloatingActionButton({
+    Key? key,
+    required this.btn1,
+    required this.btn2,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +22,12 @@ class MyFloatingActionButton extends StatelessWidget {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return const ShowPopup();
+              return ShowPopup(
+                btn1: btn1,
+                btn2: btn2,
+              );
             },
-            barrierColor: Colors.black.withOpacity(0),
+            barrierColor: Colors.black.withOpacity(0.5),
           );
         },
         style: ElevatedButton.styleFrom(

@@ -1,10 +1,10 @@
 // Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:know/components/formsPage/checkbox.dart';
-import 'package:know/components/formsPage/datepicker.dart';
-import 'package:know/components/formsPage/textinput.dart';
-import 'package:know/components/formsPage/timepicker.dart';
+import 'package:know/components/forms/checkbox.dart';
+import 'package:know/components/forms/datepicker.dart';
+import 'package:know/components/forms/textinput.dart';
+import 'package:know/components/forms/timepicker.dart';
 import 'package:know/pages/home.dart';
 
 // Define a stateless widget for the TravelPage
