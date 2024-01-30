@@ -42,7 +42,7 @@ class ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-
+              const SizedBox(height: 30.0),
               //User information displayed in a Column
               Column(
                 //Align column's Children to start horizontally

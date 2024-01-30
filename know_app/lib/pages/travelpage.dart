@@ -21,6 +21,9 @@ class TravelPage extends StatelessWidget {
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(title: 'Travels'),
       ),
+
+      backgroundColor: Colors.white,
+
       // Body of the page
       body: Column(
         children: [

@@ -39,7 +39,7 @@ class CustomAppBar extends StatelessWidget {
               // Navigate to the HomePage when the leading widget is clicked
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
+                MaterialPageRoute(builder: (context) => HomePage()),
               );
             },
             // SVG icon for the leading widget
@@ -55,23 +55,18 @@ class CustomAppBar extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
-            onTap: () {
-              // Navigate to the TravelPage when the profile image is clicked
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
-              );
-            },
-            // Circular profile image in the app bar
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/2141010002.jpg',
-                width: 40,
-                height: 40,
-                fit: BoxFit.fitHeight,
-              ),
-            ),
-          ),
+              onTap: () {
+                // Navigate to the TravelPage when the profile image is clicked
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
+              // Circular profile image in the app bar
+              child: CircleAvatar(
+                radius: 20, // Adjust the radius based on your design
+                backgroundImage: AssetImage('assets/images/2141010002.jpg'),
+              )),
         ),
       ],
     );

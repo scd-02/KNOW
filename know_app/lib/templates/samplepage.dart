@@ -42,7 +42,7 @@ class SamplePage extends StatelessWidget {
                 // Navigate to the HomePage when the leading widget is clicked
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  MaterialPageRoute(builder: (context) => HomePage()),
                 );
               },
               // SVG icon for the leading widget
@@ -62,7 +62,7 @@ class SamplePage extends StatelessWidget {
                 // Navigate to the TravelPage when the profile image is clicked
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  MaterialPageRoute(builder: (context) => HomePage()),
                 );
               },
               // Circular profile image in the app bar

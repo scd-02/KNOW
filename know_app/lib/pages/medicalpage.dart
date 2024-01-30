@@ -21,6 +21,9 @@ class MedicalPage extends StatelessWidget {
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(title: 'Medicals'),
       ),
+
+      backgroundColor: Colors.white,
+
       // Body of the page
       body: Column(
         children: [
