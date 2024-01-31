@@ -1,55 +1,101 @@
 // Import necessary packages and files
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-// import 'home.dart';
 import 'package:know/components/commonWidgets/search_bar.dart' as search_bar;
 import 'package:know/components/commonWidgets/floating_action_button.dart';
 import 'package:know/components/commonWidgets/app_bar.dart';
 
-// Define a stateless widget for the BillsPage
-class BillsPage extends StatelessWidget {
-  // Constructor for the BillsPage widget
-  const BillsPage({super.key});
+// Define a stateful widget for the BillsPage
+class BillsPage extends StatefulWidget {
+  const BillsPage({Key? key}) : super(key: key);
 
-  // Build method to create the widget's UI
+  @override
+  _BillsPageState createState() => _BillsPageState();
+}
+
+class _BillsPageState extends State<BillsPage> {
+  List<Widget> _containersButton1 = [];
+  List<Widget> _containersButton2 = [];
+
   @override
   Widget build(BuildContext context) {
-    // Scaffold widget for the overall structure of the page
-    return const Scaffold(
-      // AppBar at the top of the page
+    return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(title: 'Bills'),
       ),
-
       backgroundColor: Colors.white,
-
-      // Body of the page
       body: Column(
         children: [
-          // Custom search bar widget
           search_bar.SearchBar(),
-          // Uncomment the lines below to add more content to the body
-          // Expanded(
-          //   child: Center(
-          //     child: Text('Search results will be displayed here!'),
-          //   ),
-          // ),
+          // Use a ListView.builder to handle potentially many containers
+          Expanded(
+            child: ListView(
+              children: [
+                ..._containersButton1,
+                ..._containersButton2,
+              ],
+            ),
+          ),
         ],
       ),
-
-      // Location of the floating action button on the screen
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // Configuration for the floating action button
       floatingActionButton: Padding(
         padding: EdgeInsets.only(left: 15.0),
         child: Align(
           alignment: Alignment.bottomLeft,
-          // Use the MyFloatingActionButton widget
           child: MyFloatingActionButton(
             btn1: 'Update Balance',
             btn2: 'Add Expense',
+            onButtonPressed: (String btnText) {
+              setState(() {
+                if (btnText == 'Update Balance') {
+                  _containersButton1.add(_buildDynamicContainer(btnText));
+                } else if (btnText == 'Add Expense') {
+                  _containersButton2.add(_buildDynamicContainer(btnText));
+                }
+              });
+            },
           ),
+        ),
+      ),
+    );
+  }
+
+  // Method to build a dynamic container based on the pressed button
+  Widget _buildDynamicContainer(String btnText) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20, left: 20, right: 20),
+      decoration: BoxDecoration(
+        //color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xff1D1617).withOpacity(0.11),
+            blurRadius: 40,
+            spreadRadius: 0.0,
+          )
+        ],
+      ),
+      child: Container(
+        margin: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
+        color: Colors.white,
+        child: Column(
+          children: [
+            // Your existing content
+            Text('Container for $btnText'),
+            // Additional content with a TextField
+            TextField(
+              decoration: InputDecoration(
+                fillColor: Colors.white,
+                contentPadding: EdgeInsets.all(15),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
