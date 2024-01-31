@@ -28,7 +28,7 @@ class SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     // Container widget for the search bar with padding
     return Container(
-      margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
+      margin: const EdgeInsets.only(top: 30, left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(boxShadow: [
         BoxShadow(
             color: Color(0xff1D1617).withOpacity(0.11),

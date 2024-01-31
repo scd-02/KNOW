@@ -5,11 +5,13 @@ import 'popup.dart';
 class MyFloatingActionButton extends StatelessWidget {
   final String btn1;
   final String btn2;
+  final Function(String) onButtonPressed; // Correct function type
 
   const MyFloatingActionButton({
     Key? key,
     required this.btn1,
     required this.btn2,
+    required this.onButtonPressed, // Pass the callback as a parameter
   }) : super(key: key);
 
   @override
@@ -25,6 +27,8 @@ class MyFloatingActionButton extends StatelessWidget {
               return ShowPopup(
                 btn1: btn1,
                 btn2: btn2,
+                onButtonPressed:
+                    onButtonPressed, // Pass the callback to the ShowPopup
               );
             },
             barrierColor: Colors.black.withOpacity(0.5),
