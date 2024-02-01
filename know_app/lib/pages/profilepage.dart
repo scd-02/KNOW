@@ -45,39 +45,76 @@ class ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 30.0),
               //User information displayed in a Column
               Column(
-                //Align column's Children to start horizontally
+                // Align column's Children to start, horizontally
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Displaying Name
-                  Text(
-                    'Name : $name',
-                    style: const TextStyle(
-                      fontSize: 33,
-                      fontWeight: FontWeight.normal,
+                  RichText(
+                    text: TextSpan(
+                      text: 'Name :',
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '$name',
+                          style:
+                              const TextStyle(fontSize: 25, color: Colors.grey),
+                        ),
+                      ],
                     ),
                   ),
-                  //vertical spacing
+                  // Vertical spacing
                   const SizedBox(height: 20.0),
+
                   // Displaying Email
-                  Text(
-                    'Email : $email',
-                    style: const TextStyle(
-                      fontSize: 25,
-                      color: Colors.grey,
+                  RichText(
+                    text: TextSpan(
+                      text: 'Email : ',
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '$email',
+                          style: const TextStyle(
+                            fontSize: 25,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  //vertical spacing
+                  // Vertical spacing
                   const SizedBox(height: 20.0),
+
                   // Displaying Date of Birth
-                  Text(
-                    'Date of Birth : $dateOfBirth',
-                    style: const TextStyle(
-                      fontSize: 25,
-                      color: Colors.grey,
+                  RichText(
+                    text: TextSpan(
+                      text: 'Date of Birth : ',
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '$dateOfBirth',
+                          style: const TextStyle(
+                            fontSize: 25,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+
               //vertical spacing
               const SizedBox(height: 100.0),
               // Update button
