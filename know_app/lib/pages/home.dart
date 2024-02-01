@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:know/models/category_model.dart';
+import 'package:know/pages/billsmessage.dart';
 import 'package:know/pages/profilepage.dart';
 import 'package:know/pages/travelpage.dart';
 import 'package:know/pages/billspage.dart';
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProfilePage(),
+                            builder: (context) => BillsMessage(),
                           ),
                         );
                         break;
