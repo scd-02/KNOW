@@ -12,105 +12,208 @@ class BillsMessage extends StatefulWidget {
 
 class _BillsMessageState extends State<BillsMessage> {
   final SmsQuery _query = SmsQuery();
-  // List<SmsMessage> _messages = [];
-  List<String?> _messages = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  List<String?> _creditedMessages = [];
+  List<String?> _debitedMessages = [];
+  DateTime? _startDate;
+  DateTime? _endDate;
+  double totalCreditedAmount = 0.0;
+  double totalDebitedAmount = 0.0;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter SMS Inbox App',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
+    return Scaffold(
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: CustomAppBar(title: 'Bills Messages'),
       ),
-      home: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(kToolbarHeight),
-          child: CustomAppBar(title: 'Bills Messages'),
+      body: Container(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DateFilter(
+              onStartDateSelected: (date) => _startDate = date,
+              onEndDateSelected: (date) => _endDate = date,
+            ),
+            const SizedBox(height: 10),
+            _MessageSection(title: 'Credited', messages: _creditedMessages),
+            const SizedBox(height: 10),
+            _MessageSection(title: 'Debited', messages: _debitedMessages),
+            const SizedBox(height: 10),
+            _TotalAmountSection(
+              totalCreditedAmount: totalCreditedAmount,
+              totalDebitedAmount: totalDebitedAmount,
+            ),
+          ],
         ),
-        backgroundColor: Colors.white,
-        body: Container(
-          padding: const EdgeInsets.all(10.0),
-          child: _messages.isNotEmpty
-              ? _MessagesListView(
-                  messages: _messages,
-                )
-              : Center(
-                  child: Text(
-                    'No messages to show.\n Tap refresh button...',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            var permission = await Permission.sms.status;
-            if (permission.isGranted) {
-              final messages = await _query.querySms(
-                kinds: [
-                  SmsQueryKind.inbox,
-                  SmsQueryKind.sent,
-                ],
-                // address: '+254712345789',
-                count: 10,
-              );
-              // Message Flitering Code (credited)
-              List<String?> messStrings = [];
-              messages.forEach((SmsMessage message) {
-                String? body =
-                    message.body; // Assuming message.body might be nullable
-                List<String> words = body?.split(' ') ?? [];
-                for (int i = 0; i < words.length; i++) {
-                  words[i] = words[i].toLowerCase();
-                }
-                debugPrint(words.toString());
-                if (words.contains('credited')) {
-                  debugPrint('hellooo');
-                  messStrings.add(message.body);
-                  return;
-                }
-              });
-              debugPrint('sms inbox messages: ${messages.length}');
-
-              // setState(() => _messages = messages);
-              setState(() => _messages = messStrings);
-            } else {
-              await Permission.sms.request();
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          var permission = await Permission.sms.request();
+          if (permission.isGranted) {
+            if (_startDate == null || _endDate == null) {
+              // Show an error message or handle the case where dates are not selected
+              return;
             }
-          },
-          child: const Icon(Icons.refresh),
-        ),
+
+            final messages = await _query.querySms(
+              kinds: [SmsQueryKind.inbox, SmsQueryKind.sent],
+              count: 10,
+            );
+
+            List<String?> creditedMessages = [];
+            List<String?> debitedMessages = [];
+            double creditedAmount = 0.0;
+            double debitedAmount = 0.0;
+
+            for (var message in messages) {
+              String? body = message.body;
+              DateTime? messageDate = message.date ?? DateTime.now();
+
+              if (body != null &&
+                  messageDate.isAfter(_startDate!) &&
+                  messageDate
+                      .isBefore(_endDate!.add(const Duration(days: 1)))) {
+                if (body.toLowerCase().contains('credited')) {
+                  creditedMessages.add(body);
+
+                  // Extract amount from message containing 'INR' or 'Rs'
+                  RegExp regExp = RegExp(r'(INR|Rs)\s?(\d+(\.\d+)?)');
+                  Match? match = regExp.firstMatch(body);
+                  if (match != null) {
+                    double amount = double.parse(match.group(2)!);
+                    creditedAmount += amount;
+                  }
+                } else if (body.toLowerCase().contains('debited')) {
+                  debitedMessages.add(body);
+
+                  // Extract amount from message containing 'INR' or 'Rs'
+                  RegExp regExp = RegExp(r'(INR|Rs)\s?(\d+(\.\d+)?)');
+                  Match? match = regExp.firstMatch(body);
+                  if (match != null) {
+                    double amount = double.parse(match.group(2)!);
+                    debitedAmount += amount;
+                  }
+                }
+              }
+            }
+
+            setState(() {
+              _creditedMessages = creditedMessages;
+              _debitedMessages = debitedMessages;
+              totalCreditedAmount = creditedAmount;
+              totalDebitedAmount = debitedAmount;
+            });
+          }
+        },
+        child: const Icon(Icons.refresh),
       ),
     );
   }
 }
 
-class _MessagesListView extends StatelessWidget {
-  const _MessagesListView({
+class _DateFilter extends StatelessWidget {
+  final Function(DateTime)? onStartDateSelected;
+  final Function(DateTime)? onEndDateSelected;
+
+  const _DateFilter({
     Key? key,
+    this.onStartDateSelected,
+    this.onEndDateSelected,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now(),
+            );
+            if (selectedDate != null && onStartDateSelected != null) {
+              onStartDateSelected!(selectedDate);
+            }
+          },
+          child: const Text('Start Date'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now(),
+            );
+            if (selectedDate != null && onEndDateSelected != null) {
+              onEndDateSelected!(selectedDate);
+            }
+          },
+          child: const Text('End Date'),
+        ),
+      ],
+    );
+  }
+}
+
+class _MessageSection extends StatelessWidget {
+  const _MessageSection({
+    Key? key,
+    required this.title,
     required this.messages,
   }) : super(key: key);
 
-  // final List<SmsMessage> messages;
+  final String title;
   final List<String?> messages;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: messages.length,
-      itemBuilder: (BuildContext context, int i) {
-        var message = messages[i];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 5),
+        if (messages.isNotEmpty)
+          Column(
+            children: messages
+                .map((message) => ListTile(
+                      subtitle: Text('$message'),
+                    ))
+                .toList(),
+          )
+        else
+          Text('No $title messages to show.'),
+      ],
+    );
+  }
+}
 
-        return ListTile(
-          subtitle: Text('$message'),
-        );
-      },
+class _TotalAmountSection extends StatelessWidget {
+  final double totalCreditedAmount;
+  final double totalDebitedAmount;
+
+  const _TotalAmountSection({
+    Key? key,
+    required this.totalCreditedAmount,
+    required this.totalDebitedAmount,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Total Credited Amount: $totalCreditedAmount',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 5),
+        Text('Total Debited Amount: $totalDebitedAmount',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }
