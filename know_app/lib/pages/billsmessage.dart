@@ -79,7 +79,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     creditedMessages.add(body);
 
                     // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'(INR|Rs)\s?(\d+(\.\d+)?)');
+                    RegExp regExp = RegExp(r'Rs[^0-9]*(-?\d+(\.\d+)?)');
                     Match? match = regExp.firstMatch(body);
                     if (match != null) {
                       double amount = double.parse(match.group(2)!);
@@ -93,7 +93,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     debitedMessages.add(body);
 
                     // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'(INR|Rs)\s?(\d+(\.\d+)?)');
+                    RegExp regExp = RegExp(r'Rs[^0-9]*(-?\d+(\.\d+)?)');
                     Match? match = regExp.firstMatch(body);
                     if (match != null) {
                       double amount = double.parse(match.group(2)!);
