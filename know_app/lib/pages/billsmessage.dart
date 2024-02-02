@@ -56,10 +56,7 @@ class _BillsMessageState extends State<BillsMessage> {
               return;
             }
 
-            final messages = await _query.querySms(
-              kinds: [SmsQueryKind.inbox, SmsQueryKind.sent],
-              count: 10,
-            );
+            final messages = await _query.querySms(kinds: [SmsQueryKind.inbox]);
 
             List<String?> creditedMessages = [];
             List<String?> debitedMessages = [];
@@ -71,10 +68,13 @@ class _BillsMessageState extends State<BillsMessage> {
               DateTime? messageDate = message.date ?? DateTime.now();
 
               if (body != null &&
-                  messageDate.isAfter(_startDate!) &&
-                  messageDate
-                      .isBefore(_endDate!.add(const Duration(days: 1)))) {
-                if (body.toLowerCase().contains('credited')) {
+                  (messageDate.isAtSameMomentAs(_startDate!) ||
+                      (messageDate.isAfter(_startDate!) &&
+                          messageDate
+                              .isBefore(_endDate!.add(Duration(days: 1)))))) {
+                if (body.toLowerCase().contains('credited') &&
+                        (body.toLowerCase().contains('INR')) ||
+                    body.toLowerCase().contains('Rs')) {
                   creditedMessages.add(body);
 
                   // Extract amount from message containing 'INR' or 'Rs'
@@ -84,7 +84,9 @@ class _BillsMessageState extends State<BillsMessage> {
                     double amount = double.parse(match.group(2)!);
                     creditedAmount += amount;
                   }
-                } else if (body.toLowerCase().contains('debited')) {
+                } else if (body.toLowerCase().contains('debit') &&
+                        (body.toLowerCase().contains('INR')) ||
+                    body.toLowerCase().contains('Rs')) {
                   debitedMessages.add(body);
 
                   // Extract amount from message containing 'INR' or 'Rs'
@@ -176,15 +178,19 @@ class _MessageSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
         if (messages.isNotEmpty)
-          Column(
-            children: messages
-                .map((message) => ListTile(
-                      subtitle: Text('$message'),
-                    ))
-                .toList(),
+          Container(
+            height: 200, // Set a fixed height or use Expanded
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(messages[index]!),
+                );
+              },
+            ),
           )
         else
           Text('No $title messages to show.'),
