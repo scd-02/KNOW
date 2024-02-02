@@ -17,57 +17,57 @@ class ShowPopup extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 50),
       child: AlertDialog(
-        alignment: Alignment.bottomLeft,
-        shadowColor: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        content: SizedBox(
-          height: 150,
-          width: 200,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  // Call the callback with the appropriate button text
-                  onButtonPressed(btn1);
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 25,
-                  ),
-                ),
-                child: Text(
-                  btn1,
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  // Call the callback with the appropriate button text
-                  onButtonPressed(btn2);
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 25,
-                  ),
-                ),
-                child: Text(
-                  btn2,
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
+          alignment: Alignment.bottomLeft,
+          shadowColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
           ),
-        ),
-      ),
+          content: IntrinsicHeight(
+            child: Container(
+              constraints: BoxConstraints(minHeight: 150, minWidth: 200),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Call the callback with the appropriate button text
+                      onButtonPressed(btn1);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 25,
+                      ),
+                    ),
+                    child: Text(
+                      btn1,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Call the callback with the appropriate button text
+                      onButtonPressed(btn2);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 25,
+                      ),
+                    ),
+                    child: Text(
+                      btn2,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
     );
   }
 }
