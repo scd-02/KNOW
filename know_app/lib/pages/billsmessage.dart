@@ -72,13 +72,13 @@ class _BillsMessageState extends State<BillsMessage> {
                       (messageDate.isAfter(_startDate!) &&
                           messageDate
                               .isBefore(_endDate!.add(Duration(days: 1)))))) {
-                if (body.toLowerCase().contains('credit') ||
-                    body.toLowerCase().contains('credited') ||
-                    body.toLowerCase().contains('receive') ||
-                    body.toLowerCase().contains('received')) {
+                if (body.toLowerCase().split(' ').contains('credit') ||
+                    body.toLowerCase().split(' ').contains('credited') ||
+                    body.toLowerCase().split(' ').contains('receive') ||
+                    body.toLowerCase().split(' ').contains('received')) {
                   // Check for 'INR' or 'Rs' in credited message
-                  if (body.toLowerCase().contains('inr') ||
-                      body.toLowerCase().contains('rs')) {
+                  if (body.toLowerCase().split(' ').contains('inr') ||
+                      body.toLowerCase().split(' ').contains('rs')) {
                     // Extract amount from message containing 'INR' or 'Rs'
                     RegExp regExp = RegExp(
                         r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
@@ -88,8 +88,8 @@ class _BillsMessageState extends State<BillsMessage> {
                       double amount = double.parse(match.group(2)!);
                       creditedAmount += amount;
                     }
-                  } else if (!body.toLowerCase().contains('inr') &&
-                      !body.toLowerCase().contains('rs')) {
+                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
+                      !body.toLowerCase().split(' ').contains('rs')) {
                     // Extract amount from message containing 'INR' or 'Rs'
                     RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
                     Match? match = regExp.firstMatch(body);
@@ -99,13 +99,13 @@ class _BillsMessageState extends State<BillsMessage> {
                       creditedAmount += amount;
                     }
                   }
-                } else if (body.toLowerCase().contains('debit') ||
-                    body.toLowerCase().contains('debited') ||
-                    body.toLowerCase().contains('blocked') ||
-                    body.toLowerCase().contains('send')) {
+                } else if (body.toLowerCase().split(' ').contains('debit') ||
+                    body.toLowerCase().split(' ').contains('debited') ||
+                    body.toLowerCase().split(' ').contains('blocked') ||
+                    body.toLowerCase().split(' ').contains('send')) {
                   // Check for 'INR' or 'Rs' in debited message
-                  if (body.toLowerCase().contains('inr') ||
-                      body.toLowerCase().contains('rs')) {
+                  if (body.toLowerCase().split(' ').contains('inr') ||
+                      body.toLowerCase().split(' ').contains('rs')) {
                     // Extract amount from message containing 'INR' or 'Rs'
                     RegExp regExp = RegExp(
                         r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
@@ -115,8 +115,8 @@ class _BillsMessageState extends State<BillsMessage> {
                       double amount = double.parse(match.group(2)!);
                       debitedAmount += amount;
                     }
-                  } else if (!body.toLowerCase().contains('inr') &&
-                      !body.toLowerCase().contains('rs')) {
+                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
+                      !body.toLowerCase().split(' ').contains('rs')) {
                     // Extract amount from message containing 'INR' or 'Rs'
                     RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
                     Match? match = regExp.firstMatch(body);
