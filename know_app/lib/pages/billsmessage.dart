@@ -63,7 +63,17 @@ class _BillsMessageState extends State<BillsMessage> {
             double creditedAmount = 0.0;
             double debitedAmount = 0.0;
 
-            List<String?> bankNameList = ["axisbk", "jrgbnk", "sbiupi"];
+            List<String?> bankNameList = [
+              "axisbk",
+              "jrgbnk",
+              "sbiupi",
+              "sbipsg",
+              "cbssbi",
+              "unionb",
+              "hdfcbk",
+              "fedbnk",
+              "kotakb"
+            ];
 
             for (var message in messages) {
               var messageAddress = message.address;
@@ -119,7 +129,6 @@ class _BillsMessageState extends State<BillsMessage> {
                         }
                       } else if (body.toLowerCase().contains('debit') ||
                           body.toLowerCase().contains('debited') ||
-                          body.toLowerCase().contains('blocked') ||
                           body.toLowerCase().contains('send')) {
                         // Check for 'INR' or 'Rs' in debited message
                         if (body.toLowerCase().contains('inr') ||
@@ -262,13 +271,17 @@ class _TotalAmountSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Round credited and debited amounts to two decimal places
+    String creditedAmountString = totalCreditedAmount.toStringAsFixed(2);
+    String debitedAmountString = totalDebitedAmount.toStringAsFixed(2);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total Credited Amount: $totalCreditedAmount',
+        Text('Total Credited Amount: $creditedAmountString',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
-        Text('Total Debited Amount: $totalDebitedAmount',
+        Text('Total Debited Amount: $debitedAmountString',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ],
     );
