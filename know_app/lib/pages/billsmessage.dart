@@ -63,67 +63,88 @@ class _BillsMessageState extends State<BillsMessage> {
             double creditedAmount = 0.0;
             double debitedAmount = 0.0;
 
-            for (var message in messages) {
-              String? body = message.body;
-              DateTime? messageDate = message.date ?? DateTime.now();
+            List<String?> bankNameList = ["axisbk", "jrgbnk", "sbiupi"];
 
-              if (body != null &&
-                  (messageDate.isAtSameMomentAs(_startDate!) ||
-                      (messageDate.isAfter(_startDate!) &&
-                          messageDate
-                              .isBefore(_endDate!.add(Duration(days: 1)))))) {
-                if (body.toLowerCase().split(' ').contains('credit') ||
-                    body.toLowerCase().split(' ').contains('credited') ||
-                    body.toLowerCase().split(' ').contains('receive') ||
-                    body.toLowerCase().split(' ').contains('received')) {
-                  // Check for 'INR' or 'Rs' in credited message
-                  if (body.toLowerCase().split(' ').contains('inr') ||
-                      body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(
-                        r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null && !match.group(2)!.contains(',')) {
-                      creditedMessages.add(body);
-                      double amount = double.parse(match.group(2)!);
-                      creditedAmount += amount;
-                    }
-                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
-                      !body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null) {
-                      creditedMessages.add(body);
-                      double amount = double.parse(match.group(0)!);
-                      creditedAmount += amount;
-                    }
-                  }
-                } else if (body.toLowerCase().split(' ').contains('debit') ||
-                    body.toLowerCase().split(' ').contains('debited') ||
-                    body.toLowerCase().split(' ').contains('blocked') ||
-                    body.toLowerCase().split(' ').contains('send')) {
-                  // Check for 'INR' or 'Rs' in debited message
-                  if (body.toLowerCase().split(' ').contains('inr') ||
-                      body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(
-                        r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null && !match.group(2)!.contains(',')) {
-                      debitedMessages.add(body);
-                      double amount = double.parse(match.group(2)!);
-                      debitedAmount += amount;
-                    }
-                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
-                      !body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null) {
-                      debitedMessages.add(body);
-                      double amount = double.parse(match.group(0)!);
-                      debitedAmount += amount;
+            for (var message in messages) {
+              var messageAddress = message.address;
+              if (messageAddress != null) {
+                List<String> parts = messageAddress.split("-");
+                if (parts.length > 1) {
+                  String bankName = parts[1].toLowerCase();
+                  if (bankNameList.contains(bankName)) {
+                    // print(message.body);
+                    //       }
+                    //     }
+                    //   }
+                    // }
+                    // print('Sender: ${message.sender}');
+                    // or if you want the sender's number instead of name
+                    // print('Sender Number: ${message.address}');
+
+                    // for (var message in messages) {
+                    String? body = message.body;
+                    DateTime? messageDate = message.date ?? DateTime.now();
+
+                    if (body != null &&
+                        (messageDate.isAtSameMomentAs(_startDate!) ||
+                            (messageDate.isAfter(_startDate!) &&
+                                messageDate.isBefore(
+                                    _endDate!.add(Duration(days: 1)))))) {
+                      if (body.toLowerCase().contains('credit') ||
+                          body.toLowerCase().contains('credited') ||
+                          body.toLowerCase().contains('receive') ||
+                          body.toLowerCase().contains('received')) {
+                        // Check for 'INR' or 'Rs' in credited message
+                        if (body.toLowerCase().contains('inr') ||
+                            body.toLowerCase().contains('rs')) {
+                          // Extract amount from message containing 'INR' or 'Rs'
+                          RegExp regExp = RegExp(
+                              r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
+                          Match? match = regExp.firstMatch(body);
+                          if (match != null && !match.group(2)!.contains(',')) {
+                            creditedMessages.add(body);
+                            double amount = double.parse(match.group(2)!);
+                            creditedAmount += amount;
+                          }
+                        } else if (!body.toLowerCase().contains('inr') &&
+                            !body.toLowerCase().contains('rs')) {
+                          // Extract amount from message containing 'INR' or 'Rs'
+                          RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
+                          Match? match = regExp.firstMatch(body);
+                          if (match != null) {
+                            creditedMessages.add(body);
+                            double amount = double.parse(match.group(0)!);
+                            creditedAmount += amount;
+                          }
+                        }
+                      } else if (body.toLowerCase().contains('debit') ||
+                          body.toLowerCase().contains('debited') ||
+                          body.toLowerCase().contains('blocked') ||
+                          body.toLowerCase().contains('send')) {
+                        // Check for 'INR' or 'Rs' in debited message
+                        if (body.toLowerCase().contains('inr') ||
+                            body.toLowerCase().contains('rs')) {
+                          // Extract amount from message containing 'INR' or 'Rs'
+                          RegExp regExp = RegExp(
+                              r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
+                          Match? match = regExp.firstMatch(body);
+                          if (match != null && !match.group(2)!.contains(',')) {
+                            debitedMessages.add(body);
+                            double amount = double.parse(match.group(2)!);
+                            debitedAmount += amount;
+                          }
+                        } else if (!body.toLowerCase().contains('inr') &&
+                            !body.toLowerCase().contains('rs')) {
+                          // Extract amount from message containing 'INR' or 'Rs'
+                          RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
+                          Match? match = regExp.firstMatch(body);
+                          if (match != null) {
+                            debitedMessages.add(body);
+                            double amount = double.parse(match.group(0)!);
+                            debitedAmount += amount;
+                          }
+                        }
+                      }
                     }
                   }
                 }
