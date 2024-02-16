@@ -90,7 +90,7 @@ class FormsPageState extends State<FormsPage> {
               // Circular profile image in the app bar
               child: ClipOval(
                 child: Image.asset(
-                  'assets/images/2141010002.jpg',
+                  'assets/images/profile.jpg',
                   width: 40,
                   height: 40,
                   fit: BoxFit.fitHeight,
