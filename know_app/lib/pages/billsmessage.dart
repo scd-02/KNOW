@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
+// import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:know/components/commonWidgets/app_bar.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:telephony/telephony.dart';
+// import 'package:permission_handler/permission_handler.dart';
 
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
@@ -11,7 +12,8 @@ class BillsMessage extends StatefulWidget {
 }
 
 class _BillsMessageState extends State<BillsMessage> {
-  final SmsQuery _query = SmsQuery();
+  // final SmsQuery _query = SmsQuery();
+  final Telephony telephony = Telephony.instance;
   List<String?> _creditedMessages = [];
   List<String?> _debitedMessages = [];
   DateTime? _startDate;
@@ -49,83 +51,60 @@ class _BillsMessageState extends State<BillsMessage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          var permission = await Permission.sms.request();
-          if (permission.isGranted) {
+          // var permission = await Permission.sms.request();
+          bool? permission = await telephony.requestPhoneAndSmsPermissions;
+          if (permission == true) {
             if (_startDate == null || _endDate == null) {
               // Show an error message or handle the case where dates are not selected
               return;
             }
 
-            final messages = await _query.querySms(kinds: [SmsQueryKind.inbox]);
+            // final messages = await _query.querySms(kinds: [SmsQueryKind.inbox]);
 
             List<String?> creditedMessages = [];
             List<String?> debitedMessages = [];
             double creditedAmount = 0.0;
             double debitedAmount = 0.0;
 
-            for (var message in messages) {
-              String? body = message.body;
-              DateTime? messageDate = message.date ?? DateTime.now();
+            List<String> bankNameList = [
+              "AXISBK",
+              "jrgbnk",
+              "sbiupi",
+              "sbipsg",
+              "cbssbi",
+              "unionb",
+              "hdfcbk",
+              "fedbnk",
+              "kotakb"
+            ];
 
-              if (body != null &&
-                  (messageDate.isAtSameMomentAs(_startDate!) ||
-                      (messageDate.isAfter(_startDate!) &&
-                          messageDate
-                              .isBefore(_endDate!.add(Duration(days: 1)))))) {
-                if (body.toLowerCase().split(' ').contains('credit') ||
-                    body.toLowerCase().split(' ').contains('credited') ||
-                    body.toLowerCase().split(' ').contains('receive') ||
-                    body.toLowerCase().split(' ').contains('received')) {
-                  // Check for 'INR' or 'Rs' in credited message
-                  if (body.toLowerCase().split(' ').contains('inr') ||
-                      body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(
-                        r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null && !match.group(2)!.contains(',')) {
-                      creditedMessages.add(body);
-                      double amount = double.parse(match.group(2)!);
-                      creditedAmount += amount;
-                    }
-                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
-                      !body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null) {
-                      creditedMessages.add(body);
-                      double amount = double.parse(match.group(0)!);
-                      creditedAmount += amount;
-                    }
-                  }
-                } else if (body.toLowerCase().split(' ').contains('debit') ||
-                    body.toLowerCase().split(' ').contains('debited') ||
-                    body.toLowerCase().split(' ').contains('blocked') ||
-                    body.toLowerCase().split(' ').contains('send')) {
-                  // Check for 'INR' or 'Rs' in debited message
-                  if (body.toLowerCase().split(' ').contains('inr') ||
-                      body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(
-                        r'(INR|Rs|inr|rs)[^0-9]*(-?\d+(?:,\d{3})*(?:\.\d+)?)\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null && !match.group(2)!.contains(',')) {
-                      debitedMessages.add(body);
-                      double amount = double.parse(match.group(2)!);
-                      debitedAmount += amount;
-                    }
-                  } else if (!body.toLowerCase().split(' ').contains('inr') &&
-                      !body.toLowerCase().split(' ').contains('rs')) {
-                    // Extract amount from message containing 'INR' or 'Rs'
-                    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
-                    Match? match = regExp.firstMatch(body);
-                    if (match != null) {
-                      debitedMessages.add(body);
-                      double amount = double.parse(match.group(0)!);
-                      debitedAmount += amount;
-                    }
-                  }
+            List<SmsMessage> messages = await telephony.getInboxSms(
+              columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+              filter: SmsFilter.where(SmsColumn.ADDRESS)
+                  .like('%${bankNameList[0]}')
+                  .and(SmsColumn.DATE)
+                  .greaterThan(_startDate!.millisecondsSinceEpoch.toString())
+                  .and(SmsColumn.DATE)
+                  .lessThan(_endDate!.millisecondsSinceEpoch.toString()),
+              sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
+            );
+
+            for (var message in messages) {
+              // if message.body is null, it will assign an empty string ('') to body
+              String body = (message.body ?? '').replaceAll('\n', ' ');
+              double amount = _extractAmount(body);
+
+              if (amount > 0) {
+                print('Message: $body');
+                if (body.toLowerCase().contains('credit') ||
+                    body.toLowerCase().contains('credited')) {
+                  creditedMessages.add(body);
+                  creditedAmount += amount;
+                } else if (body.toLowerCase().contains('debit') ||
+                    body.toLowerCase().contains('debited')) {
+                  debitedMessages.add(body);
+                  debitedAmount += amount;
+                  print(amount);
                 }
               }
             }
@@ -141,6 +120,12 @@ class _BillsMessageState extends State<BillsMessage> {
         child: const Icon(Icons.refresh),
       ),
     );
+  }
+
+  double _extractAmount(String body) {
+    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
+    Match? match = regExp.firstMatch(body);
+    return match != null ? double.parse(match.group(0)!) : 0.0;
   }
 }
 
@@ -241,13 +226,17 @@ class _TotalAmountSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Round credited and debited amounts to two decimal places
+    String creditedAmountString = totalCreditedAmount.toStringAsFixed(2);
+    String debitedAmountString = totalDebitedAmount.toStringAsFixed(2);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total Credited Amount: $totalCreditedAmount',
+        Text('Total Credited Amount: $creditedAmountString',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
-        Text('Total Debited Amount: $totalDebitedAmount',
+        Text('Total Debited Amount: $debitedAmountString',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ],
     );
