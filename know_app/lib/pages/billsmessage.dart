@@ -67,7 +67,7 @@ class _BillsMessageState extends State<BillsMessage> {
             double debitedAmount = 0.0;
 
             List<String> bankNameList = [
-              "AXISBK",
+              "axisbk",
               "jrgbnk",
               "sbiupi",
               "sbipsg",
@@ -78,34 +78,44 @@ class _BillsMessageState extends State<BillsMessage> {
               "kotakb"
             ];
 
-            List<SmsMessage> messages = await telephony.getInboxSms(
-              columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
-              filter: SmsFilter.where(SmsColumn.ADDRESS)
-                  .like('%${bankNameList[0]}')
-                  .and(SmsColumn.DATE)
-                  .greaterThan(_startDate!.millisecondsSinceEpoch.toString())
-                  .and(SmsColumn.DATE)
-                  .lessThan(_endDate!.millisecondsSinceEpoch.toString()),
-              sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
-            );
+            List<SmsMessage> messages = [];
+
+            for (var bankName in bankNameList) {
+              List<SmsMessage> bankMessages = await telephony.getInboxSms(
+                columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+                filter: SmsFilter.where(SmsColumn.ADDRESS)
+                    .like('%$bankName')
+                    .and(SmsColumn.DATE)
+                    .greaterThanOrEqualTo(
+                        _startDate!.millisecondsSinceEpoch.toString())
+                    .and(SmsColumn.DATE)
+                    .lessThanOrEqualTo((_endDate!.add(const Duration(days: 1)))
+                        .millisecondsSinceEpoch
+                        .toString()), // Ensure the end date includes the entire day
+                sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
+              );
+              messages.addAll(bankMessages);
+            }
+
+            messages.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
 
             for (var message in messages) {
               // if message.body is null, it will assign an empty string ('') to body
               String body = (message.body ?? '').replaceAll('\n', ' ');
               double amount = _extractAmount(body);
 
-              if (amount > 0) {
-                print('Message: $body');
-                if (body.toLowerCase().contains('credit') ||
-                    body.toLowerCase().contains('credited')) {
-                  creditedMessages.add(body);
-                  creditedAmount += amount;
-                } else if (body.toLowerCase().contains('debit') ||
-                    body.toLowerCase().contains('debited')) {
-                  debitedMessages.add(body);
-                  debitedAmount += amount;
-                  print(amount);
-                }
+              //if (body.contains('UPI') || body.contains('IMPS') || body.contains('NEFT') || body.contains('UPI LITE') || body.contains('NPCI') || body.contains('POS') || body.contains('AePS') || body.contains('MPOS') || body.contains('BBPS') || body.contains('NETS') || body.contains('RFID') || body.contains('e-RUPI') || body.contains('UPI 123PAY') || body.contains('SELF'))
+
+              print('Message: $body');
+              if (body.toLowerCase().contains('credit') ||
+                  body.toLowerCase().contains('credited')) {
+                creditedMessages.add(body);
+                creditedAmount += amount;
+              } else if ((body.toLowerCase().contains('debit') ||
+                  body.toLowerCase().contains('debited'))) {
+                debitedMessages.add(body);
+                debitedAmount += amount;
+                print(amount);
               }
             }
 
