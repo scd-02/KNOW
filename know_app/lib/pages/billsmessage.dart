@@ -203,10 +203,10 @@ class _MessageSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
         if (messages.isNotEmpty)
-          Container(
+          SizedBox(
             height: 200, // Set a fixed height or use Expanded
             child: ListView.builder(
               itemCount: messages.length,
