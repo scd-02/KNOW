@@ -1,10 +1,9 @@
 import { Router } from "express";
 import {
   addTemplate,
-  deleteTemplate,
   fetchAllTemplates,
   fetchTemplate,
-} from "../controllers/bank";
+} from "../controllers/bank.js";
 
 const bankRoutes = Router();
 
@@ -12,4 +11,4 @@ bankRoutes.get("/", fetchTemplate);
 bankRoutes.get("/all", fetchAllTemplates);
 bankRoutes.post("/", addTemplate);
 
-export default captainRoutes;
+export default bankRoutes;
