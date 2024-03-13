@@ -67,4 +67,4 @@ const addTemplate = async (req, res) => {
   }
 };
 
-export { fetchAllTemplates, fetchTemplate, addTemplate, deleteTemplate };
+export { fetchAllTemplates, fetchTemplate, addTemplate };

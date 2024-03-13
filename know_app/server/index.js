@@ -4,9 +4,7 @@ dotenv.config();
 import express from "express";
 import connect from "./src/config/mongodbConnection.js";
 import morgan from "morgan";
-// import customerRoutes from "./src/customer/route/index.js";
-// import captainRoutes from "./src/captain/routes/profile.js";
-// import adminRouter from "./src/admin/routes/route.js";
+import bankRoutes from "./src/bank/routes/bank.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -19,9 +17,7 @@ app.get("/", (req, res) => {
   res.send("api is working");
 });
 
-app.use("/admin/", adminRouter);
-app.use("/customer/", customerRoutes);
-app.use("/captain/", captainRoutes);
+app.use("/bank/", bankRoutes);
 
 connect()
   .then(() => {
