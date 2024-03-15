@@ -1,19 +1,19 @@
+import { apiFunction } from "./apiFunction.js";
 import { config } from "dotenv";
 config();
-import { OpenAI } from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.API_KEY, // Replace with your OpenAI API key
-});
 
 async function response(message) {
   const data = {
-    model: "gpt-3.5-turbo",
+    model: process.env.model,
     messages: [
+      {
+        role: "system",
+        content: "donot explain. just provide answers as a code snippet.",
+      },
       {
         role: "user",
         content:
-          "desclaimer: donot explain, donot provide any main function, do not show implementation. Reference Question : just give a dart function that takes text as input then creates a template to extract account number, amount , transaction Id, available balance, date and time from the given string, and returns these values as a map . if any mentioned fields not found in input string, then remove those fields in returning map: INR 5590.00 credited to A/c no. XX8926 on 09-11-23 at 11:59:28 IST. Info- UPI/P2A/334365332111/ANURAG JAIN/Axis Bank - Axis Bank. ",
+          " give a dart function that takes text as input then creates a template to extract account number, amount , transaction Id, available balance, date and time from the given string, and returns these values as a map . if any mentioned fields not found in input string, then remove those fields in returning map. message : INR 5590.00 credited to A/c no. XX8926 on 09-11-23 at 11:59:28 IST. Info- UPI/P2A/334365332111/ANURAG JAIN/Axis Bank - Axis Bank. ",
       },
       {
         role: "assistant",
@@ -45,15 +45,7 @@ async function response(message) {
       },
     ],
   };
-  let result = "";
-  try {
-    const response = await openai.chat.completions.create(data);
-    result = response.choices[0].message.content;
-    return result;
-  } catch (error) {
-    console.log(error);
-  }
-  return null;
+  return apiFunction(data);
 }
 
 export { response };
