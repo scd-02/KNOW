@@ -68,10 +68,8 @@ const addTemplate = async (req, res) => {
       apiResponse = await response(message);
       rxPattern = await regexPattern(apiResponse);
       propMap = await propertyMap(apiResponse);
-
       pattern = RegExp(rxPattern);
       match = pattern.exec(message);
-
       if (match !== null) {
         break;
       }
