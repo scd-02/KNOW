@@ -8,7 +8,7 @@ async function propertyList(message) {
     messages: [
       {
         role: "system",
-        content: "donot explain. just provide answers as a code snippet. ",
+        content: "donot explain. just provide answers as a code snippet.  ",
       },
       {
         role: "user",

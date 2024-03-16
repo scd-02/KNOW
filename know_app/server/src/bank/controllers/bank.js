@@ -44,58 +44,63 @@ const addTemplate = async (req, res) => {
   // TODO: Add the logic to handle the request
   try {
     const { bankName, message } = req.body;
+
+    const preExistingList = await Bank.findOne({ bankName: bankName });
+    if (preExistingList) {
+      for (const document of preExistingList.template) {
+        if (document.regexPattern) {
+          const patrn = RegExp(document.regexPattern);
+          const matched = patrn.exec(message);
+          if (matched !== null) {
+            return res
+              .status(200)
+              .json(responseSchema(true, "Already Exists!", preExistingList));
+          }
+        }
+      }
+    }
     let apiResponse = "";
     let rxPattern = "";
     let propMap = "";
+    var pattern = null;
+    var match = null;
     for (let i = 0; i < 4; i++) {
       apiResponse = await response(message);
-      console.log("api response done");
       rxPattern = await regexPattern(apiResponse);
-      console.log("rx pattern done");
       propMap = await propertyMap(apiResponse);
-      console.log("promap done");
 
-      console.log(rxPattern);
-      const pattern = RegExp(rxPattern);
-      console.log(pattern);
-      const match = pattern.exec(message);
-      console.log(match);
+      pattern = RegExp(rxPattern);
+      match = pattern.exec(message);
 
       if (match !== null) {
         break;
       }
     }
-    const pattern = RegExp(rxPattern);
-    const match = pattern.exec(message);
-
     if (match == null) {
-      return res
+      return await res
         .status(400)
         .json(responseSchema(false, "Pattern not found", null));
-    }
-
-    const preExistingList = Bank.find({ bankName: bankName });
-
-    await preExistingList.forEach((document) => {
-      if (document.regexPattern) {
-        const patrn = RegExp(document.regexPattern);
-        const matched = patrn.exec(message);
-        if (matched !== null) {
-          return res.status(400).json(responseSchema(false, "Already Exists!"));
-        }
+    } else {
+      if (preExistingList) {
+        preExistingList.template = [
+          ...preExistingList.template,
+          { regexPattern: rxPattern, propertyMap: propMap },
+        ];
+        await preExistingList.save();
+        return res
+          .status(200)
+          .json(responseSchema(true, "bank template updated", preExistingList));
+      } else {
+        var newBankTemplate = new Bank({
+          bankName: bankName,
+          template: [{ regexPattern: rxPattern, propertyMap: propMap }],
+        });
+        await newBankTemplate.save();
+        return res
+          .status(200)
+          .json(responseSchema(true, "bank template added", newBankTemplate));
       }
-    });
-
-    const newBankTemplate = new Bank({
-      bankName: bankName,
-      propertyMap: propMap,
-      regexPattern: rxPattern,
-    });
-
-    await newBankTemplate.save();
-    return res
-      .status(200)
-      .json(responseSchema(true, "bank template added", newBankTemplate));
+    }
   } catch (error) {
     return res.status(400).json(responseSchema(false, error.toString()));
   }

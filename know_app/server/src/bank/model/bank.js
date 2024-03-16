@@ -3,8 +3,12 @@ import mongoose from "mongoose";
 const BankSchema = new mongoose.Schema(
   {
     bankName: String,
-    propertyMap: String,
-    regexPattern: String,
+    template: [
+      {
+        regexPattern: String,
+        propertyMap: String,
+      },
+    ],
   },
   { timestamps: true, collection: "bank" }
 );
