@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'dart:convert'; // to convert data to json format
+import 'package:http/http.dart' as http;
 // import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:know/components/commonWidgets/app_bar.dart';
 import 'package:telephony/telephony.dart';
@@ -1614,7 +1617,7 @@ class _BillsMessageState extends State<BillsMessage> {
               }
             }
 
-            List<SmsMessage> messages = [];
+            // List<SmsMessage> messages = [];
 
             final String endDateString =
                 (_endDate!.add(const Duration(days: 1)))
@@ -1636,33 +1639,87 @@ class _BillsMessageState extends State<BillsMessage> {
                     .and(SmsColumn.DATE)
                     .lessThanOrEqualTo(
                         endDateString), // Use the precalculated end date
-                    // sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
               );
               // messages.addAll(bankMessages);
             }
 
-            messages.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
+            Map<String, Map<String, dynamic>> bankTemplates = {};
 
-            for (var message in bankMessages) {
-              // if message.body is null, it will assign an empty string ('') to body
-              String body = (message.body ?? '').replaceAll('\n', ' ');
-              String lowercaseBody = body.toLowerCase();
-              double amount = _extractAmount(body);
+            Future<void> getData(String header, String body) async {
+              try {
+                var response =
+                    await Dio().get('http://192.168.51.139:8000/bank/all');
+                if (response.statusCode == 200) {
+                  List<dynamic> data = response.data['data'];
 
-              //if (body.contains('UPI') || body.contains('IMPS') || body.contains('NEFT') || body.contains('UPI LITE') || body.contains('NPCI') || body.contains('POS') || body.contains('AePS') || body.contains('MPOS') || body.contains('BBPS') || body.contains('NETS') || body.contains('RFID') || body.contains('e-RUPI') || body.contains('UPI 123PAY') || body.contains('SELF'))
+                  // Store bank templates in a map with bankName as key
+                  for (var templateData in data) {
+                    String bankName = templateData['bankName'];
+                    // print(bankName);
+                    if (header == bankName) {
+                      // Check if template for this bankName already exists
+                      if (!bankTemplates.containsKey(bankName)) {
+                        // If not, store the template
+                        bankTemplates[bankName] = {
+                          '_id': templateData['_id'],
+                          'bankName': bankName,
+                          'propertyMap': templateData['propertyMap'],
+                          'regexPattern': templateData['regexPattern'],
+                          'createdAt': templateData['createdAt'],
+                          'updatedAt': templateData['updatedAt'],
+                        };
+                      }
+                    } else {
+                      print(header);
+                      print("BankName not found");
+                    }
+                  }
 
-              print('Message: $body');
-              if (lowercaseBody.contains('credit') ||
-                  lowercaseBody.contains('credited')) {
-                creditedMessages.add(body);
-                creditedAmount += amount;
-              } else if ((lowercaseBody.contains('debit') ||
-                  lowercaseBody.contains('debited'))) {
-                debitedMessages.add(body);
-                debitedAmount += amount;
-                print(amount);
+                  // Print the stored bank templates
+                  print('Stored Bank Templates:');
+                  bankTemplates.forEach((key, value) {
+                    print(value);
+                  });
+                } else {
+                  print(
+                      'Failed to fetch data. Status code: ${response.statusCode}');
+                }
+              } catch (e) {
+                print(e);
               }
             }
+
+            for (var messageObj in bankMessages) {
+              String header = messageObj.address ?? '';
+              if (header.length > 6)
+                header = header.substring(header.length - 6).toLowerCase();
+              String body = (messageObj.body ?? '').replaceAll('\n', ' ');
+
+              await getData(header, body);
+            }
+
+            // for (var message in bankMessages) {
+            //   // if message.body is null, it will assign an empty string ('') to body
+            //   String body = (message.body ?? '').replaceAll('\n', ' ');
+            //   String lowercaseBody = body.toLowerCase();
+            //   double amount = _extractAmount(body);
+
+            //   //if (body.contains('UPI') || body.contains('IMPS') || body.contains('NEFT') || body.contains('UPI LITE') || body.contains('NPCI') || body.contains('POS') || body.contains('AePS') || body.contains('MPOS') || body.contains('BBPS') || body.contains('NETS') || body.contains('RFID') || body.contains('e-RUPI') || body.contains('UPI 123PAY') || body.contains('SELF'))
+
+            //   // print('Message: ${message.body}');
+            //   print('Date: ${message.date}');
+            //   print('Date: ${message.address}');
+            //   if (lowercaseBody.contains('credit') ||
+            //       lowercaseBody.contains('credited')) {
+            //     creditedMessages.add(body);
+            //     creditedAmount += amount;
+            //   } else if ((lowercaseBody.contains('debit') ||
+            //       lowercaseBody.contains('debited'))) {
+            //     debitedMessages.add(body);
+            //     debitedAmount += amount;
+            //     // print(amount);
+            //   }
+            // }
 
             setState(() {
               _creditedMessages = creditedMessages;
@@ -1677,11 +1734,11 @@ class _BillsMessageState extends State<BillsMessage> {
     );
   }
 
-  double _extractAmount(String body) {
-    RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
-    Match? match = regExp.firstMatch(body);
-    return match != null ? double.parse(match.group(0)!) : 0.0;
-  }
+  // double _extractAmount(String body) {
+  //   RegExp regExp = RegExp(r'\b(?:0|[1-9]\d*)\.\d+\b');
+  //   Match? match = regExp.firstMatch(body);
+  //   return match != null ? double.parse(match.group(0)!) : 0.0;
+  // }
 }
 
 class _DateFilter extends StatelessWidget {
