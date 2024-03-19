@@ -1,18 +1,18 @@
 import { config } from "dotenv";
+import { apiFunction } from "./apiFunction.js";
 config();
-import { OpenAI } from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.API_KEY, // Replace with your OpenAI API key
-});
 
 async function propertyList(message) {
   const data = {
-    model: "gpt-3.5-turbo-0125",
+    model: process.env.model,
     messages: [
       {
+        role: "system",
+        content: "donot explain. just provide answers as a code snippet.  ",
+      },
+      {
         role: "user",
-        content: `give me value stored in pattern variable in the below string : Map<String, String> extractTransactionDetails(String text) {
+        content: `list me property and group number assigned in a map from the below string : Map<String, String> extractTransactionDetails(String text) {
               RegExp pattern = RegExp(r'INR (\\d+\\.\\d+) credited to A/c no\\. XX(\\d+) on (\\d{2}-\\d{2}-\\d{2}) at (\\d{2}:\\d{2}:\\d{2}) IST\\. Info- UPI/P2A/(\\d+)/.*');
               Match? match = pattern.firstMatch(text);
               if (match != null) {
@@ -33,25 +33,18 @@ async function propertyList(message) {
               }
             }`,
       },
+
       {
         role: "assistant",
-        content: `INR (\\d+\\.\\d+) credited to A/c no\\. XX(\\d+) on (\\d{2}-\\d{2}-\\d{2}) at (\\d{2}:\\d{2}:\\d{2}) IST\\. Info- UPI/P2A/(\\d+)/.*`,
+        content: `{ "amount" : 1, "accountNumber" : 2, "date" : 3, "time": 4, "transactionId" :5}`,
       },
       {
         role: "user",
-        content: `give me value stored in pattern variable in the below string : ${message}`,
+        content: `list me property and group number assigned in a map from the below string : ${message} `,
       },
     ],
   };
-  let result = "";
-  try {
-    const response = await openai.chat.completions.create(data);
-    result = response.choices[0].message.content;
-    return result;
-  } catch (error) {
-    console.log(error);
-  }
-  return null;
+  return apiFunction(data);
 }
 
 export { propertyList as propertyMap };

@@ -1639,6 +1639,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     .and(SmsColumn.DATE)
                     .lessThanOrEqualTo(
                         endDateString), // Use the precalculated end date
+                // sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
               );
               // messages.addAll(bankMessages);
             }

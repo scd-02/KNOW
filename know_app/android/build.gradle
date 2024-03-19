@@ -1,5 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.7.10'
+    ext.java_version = '17'
     repositories {
         google()
         mavenCentral()
@@ -23,6 +24,7 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
+    
 }
 
 tasks.register("clean", Delete) {
