@@ -1,8 +1,12 @@
-import { response } from "../../helpers/messages/apiResponse.js";
-import { propertyMap } from "../../helpers/messages/propertyList.js";
-import { regexPattern } from "../../helpers/messages/regexTemplate.js";
+import { addToList } from "../../helpers/blacklist/controllers/bklist.js";
+import bklist from "../../helpers/blacklist/model/bklist.js";
+import { response } from "../api/apiResponse.js";
+import { propertyMap } from "../api/propertyList.js";
+import { regexPattern } from "../api/regexTemplate.js";
 import responseSchema from "../../helpers/responseSchema.js";
 import Bank from "../model/bank.js";
+import { details } from "../api/details.js";
+import { finalResponse } from "../api/response.js";
 const fetchTemplate = async (req, res) => {
   // TODO: Add the logic to handle the request
   try {
@@ -15,6 +19,7 @@ const fetchTemplate = async (req, res) => {
     return res.status(400).json(responseSchema(false, error.toString()));
   }
 };
+
 const fetchListTemplate = async (req, res) => {
   // TODO: Add the logic to handle the request
   try {
@@ -40,11 +45,60 @@ const fetchAllTemplates = async (req, res) => {
   }
 };
 
+const updateTemplate = async (req, res) => {
+  try {
+    const { bankName, message } = req.body; // Extract the message from the request body
+
+    // Find the bank object by bankName
+    const bank = await Bank.findOne({ bankName });
+
+    if (!bank) {
+      return res.status(404).json({ message: "Bank not found" });
+    }
+
+    // Iterate over the template array to check for matching patterns
+    let matchingPatternIndex = -1;
+    for (let i = 0; i < bank.template.length; i++) {
+      const regex = new RegExp(bank.template[i].regexPattern, "i"); // Case insensitive match
+      if (regex.test(message)) {
+        matchingPatternIndex = i;
+        break;
+      }
+    }
+
+    if (matchingPatternIndex === -1) {
+      // If no matching pattern is found, return the bank object
+      return res.status(200).json(bank);
+    } else {
+      // If a matching pattern is found, remove it from the template array
+      bank.template.splice(matchingPatternIndex, 1);
+      await bank.save();
+
+      // Return the modified bank object without the matched template
+      return res.status(200).json(bank);
+    }
+  } catch (error) {
+    return res.status(400).json(responseSchema(false, error.toString()));
+  }
+};
+
 const addTemplate = async (req, res) => {
   // TODO: Add the logic to handle the request
   try {
-    const { bankName, message } = req.body;
+    var { bankName, message } = req.body;
+    bankName = bankName.toString();
 
+    const isBlackListed = await bklist.findOne({
+      feature: "bank",
+      "bklist.itemName": "axis",
+    });
+    if (isBlackListed) {
+      let features = details(message);
+      let result = { bankName: bankName, features: features };
+      return await res
+        .status(201)
+        .json(responseSchema(true, "Pattern not found, details sent!", result));
+    }
     const preExistingList = await Bank.findOne({ bankName: bankName });
     if (preExistingList) {
       for (const document of preExistingList.template) {
@@ -62,12 +116,18 @@ const addTemplate = async (req, res) => {
     let apiResponse = "";
     let rxPattern = "";
     let propMap = "";
+    let transType = "";
     var pattern = null;
     var match = null;
-    for (let i = 0; i < 4; i++) {
-      apiResponse = await response(message);
-      rxPattern = await regexPattern(apiResponse);
-      propMap = await propertyMap(apiResponse);
+    for (let i = 0; i < 2; i++) {
+      // apiResponse = await response(message);
+      // rxPattern = await regexPattern(apiResponse);
+      // propMap = await propertyMap(apiResponse);
+      apiResponse = await finalResponse(message);
+      const obj = JSON.parse(apiResponse);
+      rxPattern = obj.regexPattern;
+      propMap = obj.propertyMap;
+      transType = obj.transactionType;
       pattern = RegExp(rxPattern);
       match = pattern.exec(message);
       if (match !== null) {
@@ -75,9 +135,12 @@ const addTemplate = async (req, res) => {
       }
     }
     if (match == null) {
+      await addToList("bank", bankName);
+      let features = details(message);
+      let result = { bankName: bankName, features: features };
       return await res
-        .status(400)
-        .json(responseSchema(false, "Pattern not found", null));
+        .status(201)
+        .json(responseSchema(true, "Pattern not found, details sent!", result));
     } else {
       if (preExistingList) {
         preExistingList.template = [
@@ -91,6 +154,7 @@ const addTemplate = async (req, res) => {
       } else {
         var newBankTemplate = new Bank({
           bankName: bankName,
+          transactionType: transType,
           template: [{ regexPattern: rxPattern, propertyMap: propMap }],
         });
         await newBankTemplate.save();
@@ -104,4 +168,10 @@ const addTemplate = async (req, res) => {
   }
 };
 
-export { fetchAllTemplates, fetchTemplate, addTemplate, fetchListTemplate };
+export {
+  fetchAllTemplates,
+  fetchTemplate,
+  addTemplate,
+  fetchListTemplate,
+  updateTemplate,
+};
