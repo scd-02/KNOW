@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 const BlackListSchema = new mongoose.Schema(
   {
     feature: String,
-    bklist: [
+    list: [
       {
         itemName: String,
+        itemContent: String,
       },
     ],
   },
