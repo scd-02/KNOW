@@ -45,7 +45,7 @@ const addTemplate = async (req, res) => {
   try {
     const { bankName, message } = req.body;
 
-    const preExistingList = await Bank.findOne({ bankName: bankName });
+    const preExistingList = await Bank.findOne({ bankName: bankName.toString() });
     if (preExistingList) {
       for (const document of preExistingList.template) {
         if (document.regexPattern) {
@@ -64,7 +64,7 @@ const addTemplate = async (req, res) => {
     let propMap = "";
     var pattern = null;
     var match = null;
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 1; i++) {
       apiResponse = await response(message);
       rxPattern = await regexPattern(apiResponse);
       propMap = await propertyMap(apiResponse);
@@ -76,7 +76,7 @@ const addTemplate = async (req, res) => {
     }
     if (match == null) {
       return await res
-        .status(400)
+        .status(200)
         .json(responseSchema(false, "Pattern not found", null));
     } else {
       if (preExistingList) {
@@ -100,7 +100,7 @@ const addTemplate = async (req, res) => {
       }
     }
   } catch (error) {
-    return res.status(400).json(responseSchema(false, error.toString()));
+    return res.status(200).json(responseSchema(false, error.toString()));
   }
 };
 

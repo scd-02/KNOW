@@ -11,6 +11,7 @@ const bankRoutes = Router();
 bankRoutes.get("/one", fetchTemplate);
 bankRoutes.get("/list", fetchListTemplate);
 bankRoutes.get("/all", fetchAllTemplates);
-bankRoutes.post("/", addTemplate);
+//
+bankRoutes.post("/add", addTemplate);
 
 export default bankRoutes;

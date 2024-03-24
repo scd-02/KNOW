@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert'; // to convert data to json format
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 // import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:know/components/commonWidgets/app_bar.dart';
 import 'package:telephony/telephony.dart';
@@ -1644,46 +1644,124 @@ class _BillsMessageState extends State<BillsMessage> {
               // messages.addAll(bankMessages);
             }
 
-            Map<String, Map<String, dynamic>> bankTemplates = {};
+            Map<String, dynamic> bankTemplates = {};
+            Map<String, dynamic> transactionInfo = {};
 
-            Future<void> getData(String header, String body) async {
+            Future<void> addNewTemplate(String bankName, String message) async {
               try {
-                var response =
-                    await Dio().get('http://192.168.51.139:8000/bank/all');
-                if (response.statusCode == 200) {
-                  List<dynamic> data = response.data['data'];
+                var response = await Dio().post(
+                  'http://192.168.85.139:8000/bank/add',
+                  data: {
+                    'bankName': bankName,
+                    'message': message,
+                  },
+                );
+                if (response.statusCode == 200 &&
+                    response.data['success'] == true) {
+                  // Template added successfully, update bankTemplates
+                  var newTemplate = response.data['data']['template'];
+                  bankTemplates[bankName] = newTemplate;
+                  print('Template added successfully for bank $bankName');
+                } else {
+                  print('Failed to add template for bank $bankName');
+                }
+              } catch (e) {
+                print('Error adding template for bank $bankName: $e');
+              }
+            }
 
-                  // Store bank templates in a map with bankName as key
-                  for (var templateData in data) {
-                    String bankName = templateData['bankName'];
-                    // print(bankName);
-                    if (header == bankName) {
-                      // Check if template for this bankName already exists
-                      if (!bankTemplates.containsKey(bankName)) {
-                        // If not, store the template
-                        bankTemplates[bankName] = {
-                          '_id': templateData['_id'],
-                          'bankName': bankName,
-                          'propertyMap': templateData['propertyMap'],
-                          'regexPattern': templateData['regexPattern'],
-                          'createdAt': templateData['createdAt'],
-                          'updatedAt': templateData['updatedAt'],
-                        };
+            bool checkRegexMatch(List<dynamic> bankObjList, String body) {
+              try {
+                for (var bankObj in bankObjList) {
+                  var regex = RegExp(bankObj['regexPattern']);
+                  var match = regex.firstMatch(body);
+                  var propertyMapString = bankObj['propertyMap'];
+                  var propertyMap = json.decode(propertyMapString);
+                  if (match != null) {
+                    print('Regex pattern matched after adding new template');
+                    transactionInfo = {
+                      'accountNumber': match.group(
+                          int.parse(propertyMap['accountNumber'].toString())),
+                      'date': match
+                          .group(int.parse(propertyMap['date'].toString())),
+                      'time': match
+                          .group(int.parse(propertyMap['time'].toString())),
+                      'transactionId': match.group(
+                          int.parse(propertyMap['transactionId'].toString())),
+                    };
+                    // Check if body contains 'credit' or 'debit' and set type accordingly
+                    if (body.contains('credit')) {
+                      transactionInfo['type'] = 'credit';
+                    } else if (body.contains('debit')) {
+                      transactionInfo = { 'type' : 'debit'};
+                    } else {
+                      transactionInfo['type'] =
+                          null; // Neither credit nor debit
+                    }
+                    // Extract amount if it exists in propertyMap
+                    if (propertyMap.containsKey('amount')) {
+                      var amountIndex = propertyMap['amount'];
+                      var amountString = match.group(amountIndex);
+                      if (amountString != null) {
+                        transactionInfo['amount'] = double.parse(amountString);
+                      } else {
+                        // Handle the case when amount is not captured
+                        transactionInfo['amount'] =
+                            null; // Or any other default value
                       }
                     } else {
-                      print(header);
-                      print("BankName not found");
+                      transactionInfo['amount'] = null;
+                    }
+                    // Print transaction info
+                    print('Transaction Info: $transactionInfo');
+                    return true;
+                  }
+                }
+                return false; // Return false if no template matches
+              } catch (e) {
+                print('Error while checking regex match: $e');
+                return false;
+              }
+            }
+
+            Future<void> getData(String bankName, String body) async {
+              try {
+                if (bankTemplates.containsKey(bankName)) {
+                  var bankObj = bankTemplates[bankName];
+                  // Check if the regex pattern matches the body
+                  if (checkRegexMatch(bankObj, body)) {
+                    print('Regex pattern matched for bank $bankName');
+                    // Handle the matched pattern accordingly
+                    return;
+                  } else {
+                    print(
+                        'Regex pattern did not match for bank $bankName. Wait while creating new template.');
+                    await addNewTemplate(bankName, body);
+                    // Check again if regex pattern matches after adding new template
+                    var updatedBankObj = bankTemplates[bankName];
+                    if (checkRegexMatch(updatedBankObj, body)) {
+                      print(
+                          'Regex pattern matched for bank $bankName after adding new template');
+                      // Handle the matched pattern accordingly
+                    } else {
+                      print(
+                          'Regex pattern still did not match for bank $bankName after adding new template');
+                      // Handle the case where the regex pattern still doesn't match after adding new template
                     }
                   }
-
-                  // Print the stored bank templates
-                  print('Stored Bank Templates:');
-                  bankTemplates.forEach((key, value) {
-                    print(value);
-                  });
                 } else {
-                  print(
-                      'Failed to fetch data. Status code: ${response.statusCode}');
+                  await addNewTemplate(bankName, body);
+                  // Check again if regex pattern matches after adding new template
+                  var updatedBankObj = bankTemplates[bankName];
+                  if (checkRegexMatch(updatedBankObj, body)) {
+                    print(
+                        'Regex pattern matched for bank $bankName after adding new template');
+                    // Handle the matched pattern accordingly
+                  } else {
+                    print(
+                        'Regex pattern still did not match for bank $bankName after adding new template');
+                    // Handle the case where the regex pattern still doesn't match after adding new template
+                  }
                 }
               } catch (e) {
                 print(e);
