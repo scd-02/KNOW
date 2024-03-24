@@ -1,10 +1,10 @@
-import bklist from "../model/bklist.js";
+import Bklist from "../model/bklist.js";
 
 const addToList = async (feature, itemName, itemContent) => {
   // TODO: Add the logic to handle the request
   try {
     itemName = itemName.toString();
-    const preExists = await bklist.findOne({
+    const preExists = await Bklist.findOne({
       feature: feature,
       "list.itemName": itemName,
     });
@@ -17,7 +17,7 @@ const addToList = async (feature, itemName, itemContent) => {
       console.log("blacklist updated");
       return;
     } else {
-      var blackListItem = new {
+      var blackListItem = new Bklist({
         feature: feature,
         list: [
           {
@@ -25,7 +25,7 @@ const addToList = async (feature, itemName, itemContent) => {
             itemContent: itemContent,
           },
         ],
-      }();
+      });
       await blackListItem.save();
       console.log("blacklist added new feature");
       return;
