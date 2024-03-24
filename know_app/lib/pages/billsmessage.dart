@@ -1798,12 +1798,10 @@ class _BillsMessageState extends State<BillsMessage> {
                     response.data['success'] == true) {
                   print("Map returned from backend");
                   // let result = { bankName: bankName, features: features };
-                  print("Null eror start");
-                  print(response.data);
                   var tempMap = json.decode(response.data['data']['features']);
-                  print(tempMap);
-                  print("Null eror end");
-
+                  if (tempMap['amount'].toString() == "-1") {
+                    return;
+                  }
                   transactionInfo = {
                     'accountNumber': tempMap['accountNumber'],
                     'date': tempMap['date'],
@@ -1813,12 +1811,14 @@ class _BillsMessageState extends State<BillsMessage> {
                     'transactionType': tempMap['isCreditOrDebit'],
                   };
 
-                  var cleanedAmountString =
-                      transactionInfo['amount'].replaceAll(",", "");
-                  transactionInfo['amount'] =
-                      double.parse(cleanedAmountString) == -1
-                          ? 0
-                          : double.parse(cleanedAmountString);
+                  if (transactionInfo['amount'] is String) {
+                    var cleanedAmountString =
+                        transactionInfo['amount'].replaceAll(",", "");
+                    transactionInfo['amount'] =
+                        double.parse(cleanedAmountString) == -1
+                            ? 0
+                            : double.parse(cleanedAmountString);
+                  }
 
                   // Check if body contains 'credit' or 'debit' and set type accordingly
                   if (transactionInfo['transactionType'] == 'credited') {

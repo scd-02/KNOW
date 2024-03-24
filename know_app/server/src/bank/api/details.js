@@ -27,7 +27,7 @@ async function details(message) {
           "date": "12-10-23",
           "time": "20:02:19",
           "transactionId": 328546155288,
-          "balance": "-1"
+          "balance": "-1",
           "isCreditOrDebit": "debited"
         }`,
       },
