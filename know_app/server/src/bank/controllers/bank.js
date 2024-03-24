@@ -120,18 +120,31 @@ const addTemplate = async (req, res) => {
     let transType = "";
     var pattern = null;
     var match = null;
+    var err = "";
     for (let i = 0; i < 2; i++) {
       // apiResponse = await response(message);
       // rxPattern = await regexPattern(apiResponse);
       // propMap = await propertyMap(apiResponse);
-      apiResponse = await finalResponse(message);
+      apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
       rxPattern = obj.regexPattern;
       propMap = obj.propertyMap;
       transType = obj.transactionType;
       pattern = RegExp(rxPattern);
-      match = pattern.exec(message);
+      // match = pattern.exec(message);
+      match = message.match(pattern);
       if (match !== null) {
+        try {
+          var map = JSON.parse(propMap);
+          for (const key in map) {
+            if (map[key] !== -1) {
+              var temp = match[map[key]];
+            }
+          }
+        } catch (error) {
+          err = error.toString();
+          continue;
+        }
         break;
       }
     }
