@@ -92,6 +92,7 @@ const addTemplate = async (req, res) => {
       feature: "bank",
       "list.itemName": bankName,
     });
+    // if (isBlackListed) {
     if (isBlackListed) {
       let features = await details(message);
       let result = { bankName: bankName, features: features };
