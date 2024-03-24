@@ -90,10 +90,10 @@ const addTemplate = async (req, res) => {
 
     const isBlackListed = await bklist.findOne({
       feature: "bank",
-      "bklist.itemName": "axis",
+      "list.itemName": bankName,
     });
     if (isBlackListed) {
-      let features = details(message);
+      let features = await details(message);
       let result = { bankName: bankName, features: features };
       return await res
         .status(201)
@@ -135,8 +135,8 @@ const addTemplate = async (req, res) => {
       }
     }
     if (match == null) {
-      await addToList("bank", bankName);
-      let features = details(message);
+      await addToList("bank", bankName, message);
+      let features = await details(message);
       let result = { bankName: bankName, features: features };
       return await res
         .status(201)
@@ -145,7 +145,11 @@ const addTemplate = async (req, res) => {
       if (preExistingList) {
         preExistingList.template = [
           ...preExistingList.template,
-          { regexPattern: rxPattern, propertyMap: propMap },
+          {
+            regexPattern: rxPattern,
+            propertyMap: propMap,
+            transactionType: transType,
+          },
         ];
         await preExistingList.save();
         return res
@@ -154,8 +158,13 @@ const addTemplate = async (req, res) => {
       } else {
         var newBankTemplate = new Bank({
           bankName: bankName,
-          transactionType: transType,
-          template: [{ regexPattern: rxPattern, propertyMap: propMap }],
+          template: [
+            {
+              regexPattern: rxPattern,
+              propertyMap: propMap,
+              transactionType: transType,
+            },
+          ],
         });
         await newBankTemplate.save();
         return res
