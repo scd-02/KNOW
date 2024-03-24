@@ -13,7 +13,7 @@ async function finalResponse(message) {
           Disclamers :-
           transactionType : value can only be credited or debited.
           regexPattern : create a regex template to extract account number, amount , transaction Id, available balance, date and time from given message. make regex pattern parsable in json. from pattern remove the following if found at start of the result : r'  or RegExp(r' or (r'. remove the following if found at  end of the result : ') or '); .
-          propertyMap : a map of property associated with its group number. this map only contains keys mentioned in disclamer for regexPattern. always quote keys of map in single quote. if any mentioned keys not found in given message, then set values of those keys "-1" in returning map.
+          propertyMap : a map of property associated with its group number. this map only contains keys mentioned in disclamer for regexPattern. always quote keys of map in \\"key\\" format. if any mentioned keys not found in given message, then set values of those keys "-1" in returning map.
           `,
       },
       {
