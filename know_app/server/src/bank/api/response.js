@@ -26,7 +26,7 @@ async function finalResponse(message) {
         content: `{
           "transactionType": "credited",
          "regexPattern": "INR (\\\\d+\\\\.\\\\d+) credited to A/c no\\\\. XX(\\\\d+) on (\\\\d{2}-\\\\d{2}-\\\\d{2}) at (\\\\d{2}:\\\\d{2}:\\\\d{2}) IST\\\\. Info- UPI/P2A/(\\\\d+)/.*",
-          "propertyMap": "{ 'amount' : 1, 'accountNumber' : 2, 'date' : 3, 'time': 4,'availableBalance': -1, 'transactionId' :5}"
+          "propertyMap": "{ \\"amount\\" : 1, \\"accountNumber\\" : 2, \\"date\\" : 3, \\"time\\": 4,\\"availableBalance\\": -1, \\"transactionId\\" :5}"
         }
              `,
       },
