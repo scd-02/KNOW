@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const BankSchema = new mongoose.Schema(
   {
     bankName: String,
+    transactionType: String,
     template: [
       {
         regexPattern: String,
