@@ -92,7 +92,8 @@ const addTemplate = async (req, res) => {
       feature: "bank",
       "list.itemName": bankName,
     });
-    if (isBlackListed) {
+    // if (isBlackListed) {
+    if (true) {
       let features = await details(message);
       let result = { bankName: bankName, features: features };
       return await res
@@ -173,7 +174,7 @@ const addTemplate = async (req, res) => {
       }
     }
   } catch (error) {
-    return res.status(200).json(responseSchema(false, error.toString()));
+    return res.status(400).json(responseSchema(false, error.toString()));
   }
 };
 

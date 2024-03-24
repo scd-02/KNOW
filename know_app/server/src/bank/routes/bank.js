@@ -4,7 +4,7 @@ import {
   fetchAllTemplates,
   fetchListTemplate,
   fetchTemplate,
-  updateTemplate,
+  updateTemplate
 } from "../controllers/bank.js";
 
 const bankRoutes = Router();
@@ -14,7 +14,7 @@ bankRoutes.get("/list", fetchListTemplate);
 bankRoutes.get("/all", fetchAllTemplates);
 
 bankRoutes.put("/update", updateTemplate);
-bankRoutes.post("/", addTemplate);
+bankRoutes.post("/add", addTemplate);
 
 
 export default bankRoutes;

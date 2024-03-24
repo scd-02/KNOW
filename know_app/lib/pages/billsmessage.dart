@@ -1630,6 +1630,7 @@ class _BillsMessageState extends State<BillsMessage> {
             List<SmsMessage> bankMessages = [];
 
             for (var bankName in userBankNameList) {
+              bankName = bankName.toLowerCase();
               bankMessages += await telephony.getInboxSms(
                 columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
                 filter: SmsFilter.where(SmsColumn.ADDRESS)
@@ -1646,9 +1647,129 @@ class _BillsMessageState extends State<BillsMessage> {
 
             Map<String, dynamic> bankTemplates = {};
             Map<String, dynamic> transactionInfo = {};
+            // Future<bool> updateTemplate(String bankName, String message) async {
+            //   try {
+            //     // if(message==null) return false;
+            //     print(bankName);
+            //     print(message);
+            //     var response = await Dio().put(
+            //       'http://192.168.85.139:8000/bank/update',
+            //       data: {
+            //         'bankName': bankName,
+            //         'message': message,
+            //       },
+            //     );
+            //     if (response.statusCode == 200 &&
+            //         response.data['success'] == true) {
+            //       // Template added successfully, update bankTemplates
+            //       var newTemplate = response.data['data']['template'];
+            //       bankTemplates[bankName] = newTemplate;
+            //       print(
+            //           'Unmatched Template removed successfully for bank $bankName');
+            //       return true;
+            //     } else {
+            //       print(
+            //           'Failed to remove unmatched template for bank $bankName');
+            //       return false;
+            //     }
+            //   } catch (e) {
+            //     print('Error adding template for bank $bankName: $e');
+            //   }
+            //   return false;
+            // }
+
+            Future<bool> checkRegexMatch(
+                List<dynamic> bankObjList, String body, String bankName) async {
+              try {
+                for (var bankObj in bankObjList) {
+                  var regex = RegExp(bankObj['regexPattern']);
+                  var match = regex.firstMatch(body);
+                  var propertyMapString = bankObj['propertyMap'];
+                  var propertyMap = json.decode(propertyMapString);
+                  if (match != null) {
+                    print('Regex pattern matched after adding new template');
+                    transactionInfo = {
+                      'accountNumber':
+                          int.parse(propertyMap['accountNumber'].toString()) ==
+                                  -1
+                              ? ""
+                              : match.group(int.parse(
+                                  propertyMap['accountNumber'].toString())),
+                      'date': int.parse(propertyMap['date'].toString()) == -1
+                          ? ""
+                          : match
+                              .group(int.parse(propertyMap['date'].toString())),
+                      'time': int.parse(propertyMap['time'].toString()) == -1
+                          ? ""
+                          : match
+                              .group(int.parse(propertyMap['time'].toString())),
+                      'transactionId':
+                          int.parse(propertyMap['transactionId'].toString()) ==
+                                  -1
+                              ? ""
+                              : match.group(int.parse(
+                                  propertyMap['transactionId'].toString())),
+                      'transactionType': bankObj['transactionType'],
+                    };
+
+                    // Extract amount if it exists in propertyMap
+                    if (propertyMap.containsKey('amount')) {
+                      var amountIndex = propertyMap['amount'];
+                      var amountString = match.group(amountIndex);
+                      if (amountString != null) {
+                        // Remove commas from the amount string
+                        var cleanedAmountString =
+                            amountString.replaceAll(",", "");
+                        // Convert the cleaned amount string to a double
+                        transactionInfo['amount'] =
+                            double.parse(cleanedAmountString);
+                      } else {
+                        // Handle the case when amount is not captured
+                        transactionInfo['amount'] =
+                            null; // Or any other default value
+                      }
+                    } else {
+                      transactionInfo['amount'] = 0;
+                    }
+
+                    // Check if body contains 'credit' or 'debit' and set type accordingly
+                    if (transactionInfo['transactionType'] == 'credited') {
+                      print("credited");
+                      transactionInfo['type'] = 'credited';
+                      creditedMessages.add(body);
+                      creditedAmount += transactionInfo['amount'];
+                    } else if (transactionInfo['transactionType'] ==
+                        'debited') {
+                      transactionInfo['type'] = 'debited';
+                      debitedMessages.add(body);
+                      debitedAmount += transactionInfo['amount'];
+                    } else {
+                      transactionInfo['transactionType'] =
+                          null; // Neither credit nor debit
+                    }
+
+                    // Print transaction info
+                    print('Transaction Info: $transactionInfo');
+                    return true;
+                  }
+                }
+                return false; // Return false if no template matches
+              } catch (e) {
+                print('Error while checking regex match: $e');
+                // User can report and the existing template
+                // if(await updateTemplate(bankName, body)) {
+                //   print("Template removed successfully");
+                // };
+                // await addNewTemplate(bankName, body);
+                // we will get a report add messaages to probablySpamList
+                return false;
+              }
+            }
 
             Future<void> addNewTemplate(String bankName, String message) async {
               try {
+                print(bankName);
+                print(message);
                 var response = await Dio().post(
                   'http://192.168.85.139:8000/bank/add',
                   data: {
@@ -1661,99 +1782,9 @@ class _BillsMessageState extends State<BillsMessage> {
                   // Template added successfully, update bankTemplates
                   var newTemplate = response.data['data']['template'];
                   bankTemplates[bankName] = newTemplate;
-                  print('Template added successfully for bank $bankName');
-                } else {
-                  print('Failed to add template for bank $bankName');
-                }
-              } catch (e) {
-                print('Error adding template for bank $bankName: $e');
-              }
-            }
-
-            bool checkRegexMatch(List<dynamic> bankObjList, String body) {
-              try {
-                for (var bankObj in bankObjList) {
-                  var regex = RegExp(bankObj['regexPattern']);
-                  var match = regex.firstMatch(body);
-                  var propertyMapString = bankObj['propertyMap'];
-                  var propertyMap = json.decode(propertyMapString);
-                  if (match != null) {
-                    print('Regex pattern matched after adding new template');
-                    transactionInfo = {
-                      'accountNumber': match.group(
-                          int.parse(propertyMap['accountNumber'].toString())),
-                      'date': match
-                          .group(int.parse(propertyMap['date'].toString())),
-                      'time': match
-                          .group(int.parse(propertyMap['time'].toString())),
-                      'transactionId': match.group(
-                          int.parse(propertyMap['transactionId'].toString())),
-                    };
-                    // Check if body contains 'credit' or 'debit' and set type accordingly
-                    if (body.contains('credit')) {
-                      transactionInfo['type'] = 'credit';
-                    } else if (body.contains('debit')) {
-                      transactionInfo = { 'type' : 'debit'};
-                    } else {
-                      transactionInfo['type'] =
-                          null; // Neither credit nor debit
-                    }
-                    // Extract amount if it exists in propertyMap
-                    if (propertyMap.containsKey('amount')) {
-                      var amountIndex = propertyMap['amount'];
-                      var amountString = match.group(amountIndex);
-                      if (amountString != null) {
-                        transactionInfo['amount'] = double.parse(amountString);
-                      } else {
-                        // Handle the case when amount is not captured
-                        transactionInfo['amount'] =
-                            null; // Or any other default value
-                      }
-                    } else {
-                      transactionInfo['amount'] = null;
-                    }
-                    // Print transaction info
-                    print('Transaction Info: $transactionInfo');
-                    return true;
-                  }
-                }
-                return false; // Return false if no template matches
-              } catch (e) {
-                print('Error while checking regex match: $e');
-                return false;
-              }
-            }
-
-            Future<void> getData(String bankName, String body) async {
-              try {
-                if (bankTemplates.containsKey(bankName)) {
-                  var bankObj = bankTemplates[bankName];
-                  // Check if the regex pattern matches the body
-                  if (checkRegexMatch(bankObj, body)) {
-                    print('Regex pattern matched for bank $bankName');
-                    // Handle the matched pattern accordingly
-                    return;
-                  } else {
-                    print(
-                        'Regex pattern did not match for bank $bankName. Wait while creating new template.');
-                    await addNewTemplate(bankName, body);
-                    // Check again if regex pattern matches after adding new template
-                    var updatedBankObj = bankTemplates[bankName];
-                    if (checkRegexMatch(updatedBankObj, body)) {
-                      print(
-                          'Regex pattern matched for bank $bankName after adding new template');
-                      // Handle the matched pattern accordingly
-                    } else {
-                      print(
-                          'Regex pattern still did not match for bank $bankName after adding new template');
-                      // Handle the case where the regex pattern still doesn't match after adding new template
-                    }
-                  }
-                } else {
-                  await addNewTemplate(bankName, body);
-                  // Check again if regex pattern matches after adding new template
                   var updatedBankObj = bankTemplates[bankName];
-                  if (checkRegexMatch(updatedBankObj, body)) {
+                  if (await checkRegexMatch(
+                      updatedBankObj, message, bankName)) {
                     print(
                         'Regex pattern matched for bank $bankName after adding new template');
                     // Handle the matched pattern accordingly
@@ -1762,6 +1793,76 @@ class _BillsMessageState extends State<BillsMessage> {
                         'Regex pattern still did not match for bank $bankName after adding new template');
                     // Handle the case where the regex pattern still doesn't match after adding new template
                   }
+                  print('Template added successfully for bank $bankName');
+                } else if (response.statusCode == 201 &&
+                    response.data['success'] == true) {
+                  print("Map returned from backend");
+                  // let result = { bankName: bankName, features: features };
+                  print("Null eror start");
+                  print(response.data);
+                  var tempMap = json.decode(response.data['data']['features']);
+                  print(tempMap);
+                  print("Null eror end");
+
+                  transactionInfo = {
+                    'accountNumber': tempMap['accountNumber'],
+                    'date': tempMap['date'],
+                    'time': tempMap['time'],
+                    'amount': tempMap['amount'],
+                    'transactionId': tempMap['transactionId'],
+                    'transactionType': tempMap['isCreditOrDebit'],
+                  };
+
+                  var cleanedAmountString =
+                      transactionInfo['amount'].replaceAll(",", "");
+                  transactionInfo['amount'] =
+                      double.parse(cleanedAmountString) == -1
+                          ? 0
+                          : double.parse(cleanedAmountString);
+
+                  // Check if body contains 'credit' or 'debit' and set type accordingly
+                  if (transactionInfo['transactionType'] == 'credited') {
+                    print("credited");
+                    // transactionInfo['type'] = 'credited';
+                    creditedMessages.add(message);
+                    creditedAmount += transactionInfo['amount'];
+                  } else if (transactionInfo['transactionType'] == 'debited') {
+                    // transactionInfo['type'] = 'debited';
+                    debitedMessages.add(message);
+                    debitedAmount += transactionInfo['amount'];
+                  } else {
+                    transactionInfo['transactionType'] =
+                        null; // Neither credit nor debit
+                  }
+
+                  print(transactionInfo);
+                } else {
+                  print('Failed to add template for bank $bankName');
+                }
+              } catch (e) {
+                print('Error adding template for bank $bankName: $e');
+              }
+            }
+
+            Future<void> getData(String bankName, String body) async {
+              try {
+                if (bankTemplates.containsKey(bankName)) {
+                  var bankObj = bankTemplates[bankName];
+
+                  // Check if the regex pattern matches the body
+                  if (await checkRegexMatch(bankObj, body, bankName)) {
+                    print('Regex pattern matched for bank $bankName');
+                    // Handle the matched pattern accordingly
+                    return;
+                  } else {
+                    print(
+                        'Regex pattern did not match for bank $bankName. Wait while creating new template.');
+                    await addNewTemplate(bankName, body);
+                    // Check again if regex pattern matches after adding new template
+                  }
+                } else {
+                  await addNewTemplate(bankName, body);
+                  // Check again if regex pattern matches after adding new template
                 }
               } catch (e) {
                 print(e);
@@ -1773,8 +1874,15 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6)
                 header = header.substring(header.length - 6).toLowerCase();
               String body = (messageObj.body ?? '').replaceAll('\n', ' ');
-
-              await getData(header, body);
+              if (body.toLowerCase().contains('credit') ||
+                  body.toLowerCase().contains('debit') ||
+                  body.toLowerCase().contains('credited') ||
+                  body.toLowerCase().contains('sent') ||
+                  body.toLowerCase().contains('inr') ||
+                  body.toLowerCase().contains('rs') ||
+                  body.toLowerCase().contains('received')) {
+                await getData(header, body);
+              }
             }
 
             // for (var message in bankMessages) {
