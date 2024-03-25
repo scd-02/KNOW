@@ -70,7 +70,7 @@ const updateTemplate = async (req, res) => {
       // If a matching pattern is found, remove it from the template array
       bank.template.splice(matchingPatternIndex, 1);
       await bank.save();
-      return await addTemplate(req, res);
+      return addTemplate(req, res);
     }
   } catch (error) {
     return res.status(400).json(responseSchema(false, error.toString()));
