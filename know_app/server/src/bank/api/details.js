@@ -10,7 +10,7 @@ async function details(message) {
         role: "system",
         content: ` donot explain . 
           here, user asks for a map and assitant replies a map where keys inclosed in double quotes format with following keys : isCreditedOrDebited, accountNo, amount, date, time, transactionId, balance.
-           assign value '-1' for the keys not found in the message. 
+           assign value -1 for the keys not found in the message. 
            isCreditedOrDebited can be either credited or debited .  
            keep amount value and balance value in numeric and only upto two decimal places.
            for transaction id always take numeric part of the string.  `,
@@ -27,7 +27,7 @@ async function details(message) {
           "date": "12-10-23",
           "time": "20:02:19",
           "transactionId": 328546155288,
-          "balance": "-1",
+          "balance": -1,
           "isCreditOrDebit": "debited"
         }`,
       },

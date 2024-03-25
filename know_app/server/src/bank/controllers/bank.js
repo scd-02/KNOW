@@ -1,8 +1,5 @@
 import { addToList } from "../../helpers/blacklist/controllers/bklist.js";
 import bklist from "../../helpers/blacklist/model/bklist.js";
-import { response } from "../api/apiResponse.js";
-import { propertyMap } from "../api/propertyList.js";
-import { regexPattern } from "../api/regexTemplate.js";
 import responseSchema from "../../helpers/responseSchema.js";
 import Bank from "../model/bank.js";
 import { details } from "../api/details.js";
@@ -73,9 +70,7 @@ const updateTemplate = async (req, res) => {
       // If a matching pattern is found, remove it from the template array
       bank.template.splice(matchingPatternIndex, 1);
       await bank.save();
-
-      // Return the modified bank object without the matched template
-      return res.status(200).json(bank);
+      return addTemplate(req, res);
     }
   } catch (error) {
     return res.status(400).json(responseSchema(false, error.toString()));
@@ -122,16 +117,12 @@ const addTemplate = async (req, res) => {
     var match = null;
     var err = "";
     for (let i = 0; i < 2; i++) {
-      // apiResponse = await response(message);
-      // rxPattern = await regexPattern(apiResponse);
-      // propMap = await propertyMap(apiResponse);
       apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
       rxPattern = obj.regexPattern;
       propMap = obj.propertyMap;
       transType = obj.transactionType;
       pattern = RegExp(rxPattern);
-      // match = pattern.exec(message);
       match = message.match(pattern);
       if (match !== null) {
         try {
