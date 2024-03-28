@@ -310,6 +310,12 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   await _savePromotionalMessageList();
                   //   return;
                   // }
+
+                  if (response.data['template']['transactionType'] ==
+                      "Spam Message!") {
+                    return;
+                  }
+
                   var newTemplate = response.data['data']['template'];
 
                   bankTemplates[bankName] = newTemplate;
@@ -334,7 +340,8 @@ class _BillsMessageState extends State<BillsMessage> {
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
 
-                  if (tempMap['amount'].toString() == "-1" || tempMap['transactionId'].toString() == "-1") {
+                  if (tempMap['amount'].toString() == "-1" ||
+                      tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
                     print("Invalid Map, maybe promotional message");
