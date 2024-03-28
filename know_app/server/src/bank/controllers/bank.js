@@ -83,18 +83,18 @@ const addTemplate = async (req, res) => {
     var { bankName, message } = req.body;
     bankName = bankName.toString();
 
-    const isBlackListed = await bklist.findOne({
-      feature: "bank",
-      "list.itemName": bankName,
-    });
+    // const isBlackListed = await bklist.findOne({
+    //   feature: "bank",
+    //   "list.itemName": bankName,
+    // });
+    // // if (isBlackListed) {
     // if (isBlackListed) {
-    if (isBlackListed) {
-      let features = await details(message);
-      let result = { bankName: bankName, features: features };
-      return await res
-        .status(201)
-        .json(responseSchema(true, "Pattern not found, details sent!", result));
-    }
+    //   let features = await details(message);
+    //   let result = { bankName: bankName, features: features };
+    //   return await res
+    //     .status(201)
+    //     .json(responseSchema(true, "Pattern not found, details sent!", result));
+    // }
     const preExistingList = await Bank.findOne({ bankName: bankName });
     if (preExistingList) {
       for (const document of preExistingList.template) {
@@ -119,6 +119,11 @@ const addTemplate = async (req, res) => {
     for (let i = 0; i < 2; i++) {
       apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
+      if (obj.transactionType == "spam") {
+        return await res
+          .status(201)
+          .json(responseSchema(true, "Spam message!", apiResponse));
+      }
       rxPattern = obj.regexPattern;
       propMap = obj.propertyMap;
       transType = obj.transactionType;
@@ -140,7 +145,7 @@ const addTemplate = async (req, res) => {
       }
     }
     if (match == null) {
-      await addToList("bank", bankName, message);
+      // await addToList("bank", bankName, message);
       let features = await details(message);
       let result = { bankName: bankName, features: features };
       return await res
