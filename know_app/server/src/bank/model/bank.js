@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 const BankSchema = new mongoose.Schema(
   {
     bankName: String,
+
     template: [
       {
+        transactionType: String,
         regexPattern: String,
         propertyMap: String,
       },

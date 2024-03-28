@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
+// import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:know/components/commonWidgets/search_bar.dart' as search_bar;
-import 'package:know/components/commonWidgets/floating_action_button.dart';
-import 'package:know/components/commonWidgets/app_bar.dart';
+// import 'package:know/components/commonWidgets/search_bar.dart' as search_bar;
+// import 'package:know/components/commonWidgets/floating_action_button.dart';
+// import 'package:know/components/commonWidgets/app_bar.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;

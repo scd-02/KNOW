@@ -8,8 +8,9 @@ import bankRoutes from "./src/bank/routes/bank.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
-
+import cors from 'cors'
 // body parser
+
 app.use(express.json());
 app.use(morgan("dev"));
 
