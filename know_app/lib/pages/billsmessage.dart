@@ -156,8 +156,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     .and(SmsColumn.DATE)
                     .greaterThanOrEqualTo(startDateString)
                     .and(SmsColumn.DATE)
-                    .lessThanOrEqualTo(
-                        endDateString),
+                    .lessThanOrEqualTo(endDateString),
                 // sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
               );
             }
@@ -194,78 +193,82 @@ class _BillsMessageState extends State<BillsMessage> {
               return false;
             }
 
+            void createTransactionInfo(List<dynamic> bankObjList,
+                Map<String, dynamic> transactionInfo, String body) {
+              for (var bankObj in bankObjList) {
+                var regex = RegExp(bankObj['regexPattern']);
+                var match = regex.firstMatch(body);
+                var propertyMapString = bankObj['propertyMap'];
+                var propertyMap = json.decode(propertyMapString);
+                transactionInfo = {
+                  'accountNumber': int.parse(
+                              propertyMap['accountNumber'].toString()) ==
+                          -1
+                      ? ""
+                      : match!.group(
+                          int.parse(propertyMap['accountNumber'].toString())),
+                  'date': int.parse(propertyMap['date'].toString()) == -1
+                      ? ""
+                      : match!.group(int.parse(propertyMap['date'].toString())),
+                  'time': int.parse(propertyMap['time'].toString()) == -1
+                      ? ""
+                      : match!.group(int.parse(propertyMap['time'].toString())),
+                  'transactionId': int.parse(
+                              propertyMap['transactionId'].toString()) ==
+                          -1
+                      ? ""
+                      : match!.group(
+                          int.parse(propertyMap['transactionId'].toString())),
+                  'transactionType': bankObj['transactionType'],
+                };
+
+                // Extract amount if it exists in propertyMap
+                if (propertyMap.containsKey('amount')) {
+                  var amountIndex = propertyMap['amount'];
+                  var amountString = match?.group(amountIndex);
+                  if (amountString != null) {
+                    // Remove commas from the amount string
+                    var cleanedAmountString = amountString.replaceAll(",", "");
+                    // Convert the cleaned amount string to a double
+                    transactionInfo['amount'] =
+                        double.parse(cleanedAmountString);
+                  } else {
+                    // Handle the case when amount is not captured
+                    transactionInfo['amount'] =
+                        null; // Or any other default value
+                  }
+                } else {
+                  transactionInfo['amount'] = null;
+                }
+
+                // Check if body contains 'credit' or 'debit' and set type accordingly
+                if (transactionInfo['transactionType'] == 'credited') {
+                  print("credited");
+                  // transactionInfo['type'] = 'credited';
+                  creditedMessages.add(body);
+                  creditedAmount += transactionInfo['amount'];
+                } else if (transactionInfo['transactionType'] == 'debited') {
+                  // transactionInfo['type'] = 'debited';
+                  debitedMessages.add(body);
+                  debitedAmount += transactionInfo['amount'];
+                } else {
+                  transactionInfo['transactionType'] =
+                      null; // Neither credit nor debit
+                }
+
+                // Print transaction info
+                print('Transaction Info: $transactionInfo');
+              }
+            }
+
             Future<bool> checkRegexMatch(
                 List<dynamic> bankObjList, String body, String bankName) async {
               try {
                 for (var bankObj in bankObjList) {
                   var regex = RegExp(bankObj['regexPattern']);
                   var match = regex.firstMatch(body);
-                  var propertyMapString = bankObj['propertyMap'];
-                  var propertyMap = json.decode(propertyMapString);
                   if (match != null) {
-                    print('Regex pattern matched after adding new template');
-                    transactionInfo = {
-                      'accountNumber':
-                          int.parse(propertyMap['accountNumber'].toString()) ==
-                                  -1
-                              ? ""
-                              : match.group(int.parse(
-                                  propertyMap['accountNumber'].toString())),
-                      'date': int.parse(propertyMap['date'].toString()) == -1
-                          ? ""
-                          : match
-                              .group(int.parse(propertyMap['date'].toString())),
-                      'time': int.parse(propertyMap['time'].toString()) == -1
-                          ? ""
-                          : match
-                              .group(int.parse(propertyMap['time'].toString())),
-                      'transactionId':
-                          int.parse(propertyMap['transactionId'].toString()) ==
-                                  -1
-                              ? ""
-                              : match.group(int.parse(
-                                  propertyMap['transactionId'].toString())),
-                      'transactionType': bankObj['transactionType'],
-                    };
-
-                    // Extract amount if it exists in propertyMap
-                    if (propertyMap.containsKey('amount')) {
-                      var amountIndex = propertyMap['amount'];
-                      var amountString = match.group(amountIndex);
-                      if (amountString != null) {
-                        // Remove commas from the amount string
-                        var cleanedAmountString =
-                            amountString.replaceAll(",", "");
-                        // Convert the cleaned amount string to a double
-                        transactionInfo['amount'] =
-                            double.parse(cleanedAmountString);
-                      } else {
-                        // Handle the case when amount is not captured
-                        transactionInfo['amount'] =
-                            null; // Or any other default value
-                      }
-                    } else {
-                      transactionInfo['amount'] = 0;
-                    }
-
-                    // Check if body contains 'credit' or 'debit' and set type accordingly
-                    if (transactionInfo['transactionType'] == 'credited') {
-                      print("credited");
-                      transactionInfo['type'] = 'credited';
-                      creditedMessages.add(body);
-                      creditedAmount += transactionInfo['amount'];
-                    } else if (transactionInfo['transactionType'] ==
-                        'debited') {
-                      transactionInfo['type'] = 'debited';
-                      debitedMessages.add(body);
-                      debitedAmount += transactionInfo['amount'];
-                    } else {
-                      transactionInfo['transactionType'] =
-                          null; // Neither credit nor debit
-                    }
-
-                    // Print transaction info
-                    print('Transaction Info: $transactionInfo');
+                    print('Regex pattern matched');
                     return true;
                   }
                 }
@@ -296,12 +299,22 @@ class _BillsMessageState extends State<BillsMessage> {
                 if (response.statusCode == 200 &&
                     response.data['success'] == true) {
                   // Template added successfully, update bankTemplates
+                  // if (response.data['msg']
+                  //     .tolowercase()
+                  //     .contains('pattern not found')) {
+                  //   promotionalMessageList.add(message);
+                  //   await _savePromotionalMessageList();
+                  //   return;
+                  // }
                   var newTemplate = response.data['data']['template'];
+
                   bankTemplates[bankName] = newTemplate;
                   await _saveBankTemplates();
                   var updatedBankObj = bankTemplates[bankName];
                   if (await checkRegexMatch(
                       updatedBankObj, message, bankName)) {
+                    createTransactionInfo(
+                        updatedBankObj, transactionInfo, message);
                     print(
                         'Regex pattern matched for bank $bankName after adding new template');
                     // Handle the matched pattern accordingly
@@ -371,6 +384,7 @@ class _BillsMessageState extends State<BillsMessage> {
 
                   // Check if the regex pattern matches the body
                   if (await checkRegexMatch(bankObj, body, bankName)) {
+                    createTransactionInfo(bankObj, transactionInfo, body);
                     print('Regex pattern matched for bank $bankName');
                     // Handle the matched pattern accordingly
                     return;
@@ -394,16 +408,18 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6) {
                 header = header.substring(header.length - 6).toLowerCase();
               }
-              String body = (messageObj.body ?? '').replaceAll('\n', ' ');
-              if (!promotionalMessageList.contains(body.toLowerCase()) &&
-                  (body.toLowerCase().contains('credit') ||
-                      body.toLowerCase().contains('debit') ||
-                      body.toLowerCase().contains('credited') ||
-                      body.toLowerCase().contains('sent') ||
-                      body.toLowerCase().contains('inr') ||
-                      body.toLowerCase().contains('rs') ||
-                      body.toLowerCase().contains('received'))) {
-                await getData(header, body);
+              if (!promotionalMessageList
+                  .contains((messageObj.body ?? '').toLowerCase())) {
+                String body = (messageObj.body ?? '').replaceAll('\n', ' ');
+                if ((body.toLowerCase().contains('credit') ||
+                    body.toLowerCase().contains('debit') ||
+                    body.toLowerCase().contains('credited') ||
+                    body.toLowerCase().contains('sent') ||
+                    body.toLowerCase().contains('inr') ||
+                    body.toLowerCase().contains('rs') ||
+                    body.toLowerCase().contains('received'))) {
+                  await getData(header, body);
+                }
               }
             }
 
