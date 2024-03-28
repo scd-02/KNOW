@@ -311,11 +311,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   return;
                   // }
 
-                  if (response.data['template']['transactionType'] ==
-                      "Spam Message!") {
-                    return;
-                  }
-
+                  
                   var newTemplate = response.data['data']['template'];
 
                   bankTemplates[bankName] = newTemplate;
