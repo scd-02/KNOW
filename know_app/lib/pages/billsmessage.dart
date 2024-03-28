@@ -311,7 +311,6 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   return;
                   // }
 
-                  
                   var newTemplate = response.data['data']['template'];
 
                   bankTemplates[bankName] = newTemplate;
@@ -335,8 +334,9 @@ class _BillsMessageState extends State<BillsMessage> {
                   print("Map returned from backend");
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
-
-                  if (tempMap['amount'].toString() == "-1" ||
+                  print(tempMap);
+                  if (tempMap['transactionType'] == 'spam' ||
+                      ['amount'].toString() == "-1" ||
                       tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
