@@ -161,8 +161,6 @@ class _BillsMessageState extends State<BillsMessage> {
               );
             }
 
-            Map<String, dynamic> transactionInfo = {};
-
             Future<bool> updateTemplate(String bankName, String message) async {
               try {
                 print(bankName);
@@ -192,6 +190,9 @@ class _BillsMessageState extends State<BillsMessage> {
               }
               return false;
             }
+
+            Map<String, dynamic> transactionInfo = {};
+            List<Map<String, dynamic>> transactionInfoList = [];
 
             void createTransactionInfo(List<dynamic> bankObjList,
                 Map<String, dynamic> transactionInfo, String body) {
@@ -255,6 +256,9 @@ class _BillsMessageState extends State<BillsMessage> {
                   transactionInfo['transactionType'] =
                       null; // Neither credit nor debit
                 }
+
+                // Add transaction info to the list
+                transactionInfoList.add(transactionInfo);
 
                 // Print transaction info
                 print('Transaction Info: $transactionInfo');
@@ -368,6 +372,9 @@ class _BillsMessageState extends State<BillsMessage> {
                         null; // Neither credit nor debit
                   }
 
+                  // Add transaction info to the list
+                  transactionInfoList.add(transactionInfo);
+
                   print(transactionInfo);
                 } else {
                   print('Failed to add template for bank $bankName');
@@ -435,135 +442,4 @@ class _BillsMessageState extends State<BillsMessage> {
       ),
     );
   }
-}
-
-Widget _buildMessageContainer(
-    SmsMessage message, Map<String, dynamic> _bankTemplates) {
-  String? bankName = message.address;
-  String body = (message.body ?? '').replaceAll('\n', ' ');
-  String amount = '';
-  String? accountNumber = '';
-  String date = '';
-  String time = '';
-  String transactionId = '';
-  String type = '';
-  // Check if bankName exists in _bankTemplates
-  if (_bankTemplates.containsKey(bankName)) {
-    var bankObjList = _bankTemplates[bankName];
-    for (var bankObj in bankObjList) {
-      var regex = RegExp(bankObj['regexPattern']);
-      var match = regex.firstMatch(body);
-      var propertyMapString = bankObj['propertyMap'];
-      var propertyMap = json.decode(propertyMapString);
-
-      if (match != null) {
-        accountNumber = int.parse(propertyMap['accountNumber'].toString()) == -1
-            ? ""
-            : match.group(int.parse(propertyMap['accountNumber'].toString()));
-
-        date = (int.parse(propertyMap['date'].toString()) == -1
-            ? ""
-            : match.group(int.parse(propertyMap['date'].toString())))!;
-        time = (int.parse(propertyMap['time'].toString()) == -1
-            ? ""
-            : match.group(int.parse(propertyMap['time'].toString())))!;
-        transactionId = (int.parse(propertyMap['transactionId'].toString()) ==
-                -1
-            ? ""
-            : match.group(int.parse(propertyMap['transactionId'].toString())))!;
-        type = bankObj['transactionType'];
-      }
-    }
-  } else {
-    // Handle the case when bankName is not found in _bankTemplates
-  }
-  // String body = (message.body ?? '').replaceAll('\n', ' ');
-  // for (var info in _bankTemplates.entries) {
-  //   String regexPattern = info['bankName'][i]['regexPattern'];
-  // }
-  // String regexPattern = _bankTemplates['bankName']['regexPattern'];
-  // RegExp regex = RegExp(regexPattern);
-  // Match? match = regex.firstMatch(body);
-  // String amount = '';
-  // String accountNumber = '';
-  // String date = '';
-  // String time = '';
-  // String transactionId = '';
-  // String type = '';
-  // if (match != null) {
-  //   accountNumber = match.group(1)!;
-  //   amount = match.group(2)!;
-  //   date = match.group(3)!;
-  //   transactionId = match.group(4)!;
-  //   type = _bankTemplates['bankName']['transactionType'];
-  // }
-  // Map<String, List<Map<String, dynamic>>> transactionInfo = {};
-  // String? bankName = message.address;
-  //String sms = (message.body ?? '').replaceAll('\n', ' ');
-  // String amount = '';
-  // String accountNumber = '';
-  // String date = '';
-  // String time = '';
-  // String transactionId = '';
-  // String type = '';
-
-  // if (transactionInfo.containsKey(bankName)) {
-  //   //List<Map<String, dynamic>> transactions = transactionInfo[bankName] ?? [];
-  //   if (transactions.isNotEmpty) {
-  //     accountNumber = transactions[0]['accountNumber']?.toString() ?? '';
-  //     date = transactions[0]['date']?.toString() ?? '';
-  //     time = transactions[0]['time']?.toString() ?? '';
-  //     transactionId = transactions[0]['transactionId']?.toString() ?? '';
-  //     type = transactions[0]['type']?.toString() ?? '';
-  //     amount = transactions[0]['amount']?.toString() ?? '';
-  //   }
-  // }
-
-  return Container(
-    padding: const EdgeInsets.all(10),
-    margin: const EdgeInsets.symmetric(vertical: 5),
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(type,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 5),
-        // Text(sms, style: const TextStyle(fontSize: 14)),
-        Row(
-          children: [
-            // Display amount
-            Text('Amount: $amount',
-                style: const TextStyle(fontSize: 14, color: Colors.grey)),
-            const Spacer(),
-            // Placeholder for message date
-            Text('Date: $date',
-                style: const TextStyle(fontSize: 14, color: Colors.grey)),
-            // Text(
-            //     'Date:  ${DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(message.date!))}',
-            //     style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          ],
-        ),
-        // Add more widgets for bank logo, amount, date, etc.
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            // Display amount
-            Text('AccountNumber: $accountNumber',
-                style: const TextStyle(fontSize: 14, color: Colors.grey)),
-            const Spacer(),
-            Text('Time: $time',
-                style: const TextStyle(fontSize: 14, color: Colors.grey)),
-            const Spacer(),
-            // Placeholder for message date
-            Text('TransactionId: $transactionId',
-                style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          ],
-        ),
-      ],
-    ),
-  );
 }
