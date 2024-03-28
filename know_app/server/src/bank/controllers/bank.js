@@ -120,7 +120,7 @@ const addTemplate = async (req, res) => {
       apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
       if (obj.transactionType == "spam") {
-        let result = `{
+        let msgResponse = `{
           "amount": -1 ,
           "accountNo": -1 ,
           "date": -1 ,
@@ -129,6 +129,7 @@ const addTemplate = async (req, res) => {
           "balance": -1,
           "transactionType": "spam"
         }`;
+        let result = { bankName: bankName, features: msgResponse };
         return await res
           .status(201)
           .json(responseSchema(true, "Spam message!", result));
