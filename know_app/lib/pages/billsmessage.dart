@@ -196,38 +196,15 @@ class _BillsMessageState extends State<BillsMessage> {
 
             Map<String, dynamic> transactionInfo = {};
             List<Map<String, dynamic>> transactionInfoList = [];
+            Map<String, dynamic> objHeader = {};
 
             Future<void> createTransactionInfo(List<dynamic> bankObjList,
                 Map<String, dynamic> transactionInfo, String body) async {
-              for (var bankObj in bankObjList) {
-                var regex = RegExp(bankObj['regexPattern']);
+              // for (var bankObj in bankObjList) {
+                var regex = RegExp(objHeader['regexPattern']);
                 var match = regex.firstMatch(body);
-                var propertyMapString = bankObj['propertyMap'];
+                var propertyMapString = objHeader['propertyMap'];
                 var propertyMap = json.decode(propertyMapString);
-
-                // Extract amount if it exists in propertyMap
-                if (propertyMap.containsKey('amount')) {
-                  var amountIndex = propertyMap['amount'];
-                  var amountString = match?.group(amountIndex);
-                  if (amountString != null) {
-                    
-                    // Remove commas from the amount string
-                    var cleanedAmountString = amountString.replaceAll(",", "");
-                    // Convert the cleaned amount string to a double
-                    transactionInfo['amount'] =
-                        double.parse(cleanedAmountString);
-                  } else {
-                      promotionalMessageList.add(body);
-                    await _savePromotionalMessageList();
-                    return;
-                    // Handle the case when amount is not captured
-                    // transactionInfo['amount'] =
-                    //     null; // Or any other default value
-                  }
-                } else {
-                  return;
-                  // transactionInfo['amount'] = null;
-                }
 
                 transactionInfo = {
                   'accountNumber':
@@ -256,9 +233,33 @@ class _BillsMessageState extends State<BillsMessage> {
                               ? match.group(int.parse(
                                   propertyMap['transactionId'].toString()))
                               : "",
-                  'transactionType': bankObj['transactionType'],
+                  'transactionType': objHeader['transactionType'],
                 };
 
+                // Extract amount if it exists in propertyMap
+                if (propertyMap.containsKey('amount')) {
+                  var amountIndex = propertyMap['amount'];
+                  var amountString = match?.group(amountIndex);
+                  if (amountString != null) {
+                    
+                    // Remove commas from the amount string
+                    var cleanedAmountString = amountString.replaceAll(",", "");
+                    // Convert the cleaned amount string to a double
+                    transactionInfo['amount'] =
+                        double.parse(cleanedAmountString);
+                  } else {
+                      promotionalMessageList.add(body);
+                    await _savePromotionalMessageList();
+                    return;
+                    // Handle the case when amount is not captured
+                    // transactionInfo['amount'] =
+                    //     null; // Or any other default value
+                  }
+                } else {
+                  return;
+                  // transactionInfo['amount'] = null;
+                }
+                print("Transaction info in create funciton : $transactionInfo");
                 // Check if body contains 'credit' or 'debit' and set type accordingly
                 if (transactionInfo['transactionType'] == 'credited') {
                   print("credited");
@@ -281,7 +282,7 @@ class _BillsMessageState extends State<BillsMessage> {
 
                 // Print transaction info
                 print('Transaction Info: $transactionInfo');
-              }
+              // }
             }
 
             Future<bool> checkRegexMatch(
@@ -292,6 +293,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   var match = regex.firstMatch(body);
                   if (match != null) {
                     print('Regex pattern matched');
+                    objHeader = bankObj;
                     return true;
                   }
                 }
@@ -329,6 +331,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   await _savePromotionalMessageList();
                   //   return;
                   // }
+
                   var newTemplate = response.data['data']['template'];
 
                   bankTemplates[bankName] = newTemplate;
@@ -352,8 +355,10 @@ class _BillsMessageState extends State<BillsMessage> {
                   print("Map returned from backend");
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
-
-                  if (tempMap['transactionId'].toString() == "-1") {
+                  print("the temp map $tempMap");
+                  if (tempMap['transactionType'] == 'spam' ||
+                      ['amount'].toString() == "-1" ||
+                      tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
                     print("Invalid Map, maybe promotional message");
@@ -394,7 +399,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   // Add transaction info to the list
                   transactionInfoList.add(transactionInfo);
 
-                  print(transactionInfo);
+                  print("When temp map created $transactionInfo");
                 } else {
                   print('Failed to add template for bank $bankName');
                 }
@@ -417,6 +422,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   } else {
                     print(
                         'Regex pattern did not match for bank $bankName. Wait while creating new template.');
+
                     await addNewTemplate(bankName, body);
                     // Check again if regex pattern matches after adding new template
                   }
@@ -435,7 +441,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 header = header.substring(header.length - 6).toLowerCase();
               }
               if (!promotionalMessageList
-                  .contains((messageObj.body ?? '').toLowerCase())) {
+                  .contains((messageObj.body ?? ''))) {
                 String body = (messageObj.body ?? '').replaceAll('\n', ' ');
                 if ((body.toLowerCase().contains('credit') ||
                     body.toLowerCase().contains('debit') ||
