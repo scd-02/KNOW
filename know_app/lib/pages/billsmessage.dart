@@ -166,7 +166,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.85.139:8000/bank/update',
+                  'http://192.168.124.139:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -294,7 +294,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.85.139:8000/bank/add',
+                  'http://192.168.124.139:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -334,7 +334,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
 
-                  if (tempMap['amount'].toString() == "-1") {
+                  if (tempMap['amount'].toString() == "-1" || tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
                     print("Invalid Map, maybe promotional message");
