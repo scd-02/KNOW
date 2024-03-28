@@ -63,17 +63,20 @@ class _BillsMessageState extends State<BillsMessage> {
         _prefs.getString('promotional_message');
     if (promotionalMessageJson != null) {
       setState(() {
-        // promotionalMessageList
-        //     .clear(); // Clear the map before loading from local storage
-        promotionalMessageList.addAll(json.decode(promotionalMessageJson));
+        // Decode JSON and cast each element to String before adding to the Set
+        List<dynamic> decodedList = json.decode(promotionalMessageJson);
+        promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
       });
     }
   }
 
   Future<void> _savePromotionalMessageList() async {
-    // Save bank templates to local storage
+    // Convert Set to List before encoding
+    List<String> promotionalMessageListAsList = promotionalMessageList.toList();
+
+    // Save promotional message list to local storage
     await _prefs.setString(
-        'promotional_message', json.encode(promotionalMessageList));
+        'promotional_message', json.encode(promotionalMessageListAsList));
   }
 
   @override
@@ -194,64 +197,80 @@ class _BillsMessageState extends State<BillsMessage> {
             Map<String, dynamic> transactionInfo = {};
             List<Map<String, dynamic>> transactionInfoList = [];
 
-            void createTransactionInfo(List<dynamic> bankObjList,
-                Map<String, dynamic> transactionInfo, String body) {
+            Future<void> createTransactionInfo(List<dynamic> bankObjList,
+                Map<String, dynamic> transactionInfo, String body) async {
               for (var bankObj in bankObjList) {
                 var regex = RegExp(bankObj['regexPattern']);
                 var match = regex.firstMatch(body);
                 var propertyMapString = bankObj['propertyMap'];
                 var propertyMap = json.decode(propertyMapString);
-                transactionInfo = {
-                  'accountNumber': int.parse(
-                              propertyMap['accountNumber'].toString()) ==
-                          -1
-                      ? ""
-                      : match!.group(
-                          int.parse(propertyMap['accountNumber'].toString())),
-                  'date': int.parse(propertyMap['date'].toString()) == -1
-                      ? ""
-                      : match!.group(int.parse(propertyMap['date'].toString())),
-                  'time': int.parse(propertyMap['time'].toString()) == -1
-                      ? ""
-                      : match!.group(int.parse(propertyMap['time'].toString())),
-                  'transactionId': int.parse(
-                              propertyMap['transactionId'].toString()) ==
-                          -1
-                      ? ""
-                      : match!.group(
-                          int.parse(propertyMap['transactionId'].toString())),
-                  'transactionType': bankObj['transactionType'],
-                };
 
                 // Extract amount if it exists in propertyMap
                 if (propertyMap.containsKey('amount')) {
                   var amountIndex = propertyMap['amount'];
                   var amountString = match?.group(amountIndex);
                   if (amountString != null) {
+                    
                     // Remove commas from the amount string
                     var cleanedAmountString = amountString.replaceAll(",", "");
                     // Convert the cleaned amount string to a double
                     transactionInfo['amount'] =
                         double.parse(cleanedAmountString);
                   } else {
+                      promotionalMessageList.add(body);
+                    await _savePromotionalMessageList();
+                    return;
                     // Handle the case when amount is not captured
-                    transactionInfo['amount'] =
-                        null; // Or any other default value
+                    // transactionInfo['amount'] =
+                    //     null; // Or any other default value
                   }
                 } else {
-                  transactionInfo['amount'] = null;
+                  return;
+                  // transactionInfo['amount'] = null;
                 }
+
+                transactionInfo = {
+                  'accountNumber':
+                      int.parse(propertyMap['accountNumber'].toString()) == -1
+                          ? ""
+                          : match != null
+                              ? match.group(int.parse(
+                                  propertyMap['accountNumber'].toString()))
+                              : "",
+                  'date': int.parse(propertyMap['date'].toString()) == -1
+                      ? ""
+                      : match != null
+                          ? match
+                              .group(int.parse(propertyMap['date'].toString()))
+                          : "",
+                  'time': int.parse(propertyMap['time'].toString()) == -1
+                      ? ""
+                      : match != null
+                          ? match
+                              .group(int.parse(propertyMap['time'].toString()))
+                          : "",
+                  'transactionId':
+                      int.parse(propertyMap['transactionId'].toString()) == -1
+                          ? ""
+                          : match != null
+                              ? match.group(int.parse(
+                                  propertyMap['transactionId'].toString()))
+                              : "",
+                  'transactionType': bankObj['transactionType'],
+                };
 
                 // Check if body contains 'credit' or 'debit' and set type accordingly
                 if (transactionInfo['transactionType'] == 'credited') {
                   print("credited");
                   // transactionInfo['type'] = 'credited';
                   creditedMessages.add(body);
-                  creditedAmount += transactionInfo['amount'];
+                  creditedAmount +=
+                      transactionInfo['amount'] ?? 0; // Added null check here
                 } else if (transactionInfo['transactionType'] == 'debited') {
                   // transactionInfo['type'] = 'debited';
                   debitedMessages.add(body);
-                  debitedAmount += transactionInfo['amount'];
+                  debitedAmount +=
+                      transactionInfo['amount'] ?? 0; // Added null check here
                 } else {
                   transactionInfo['transactionType'] =
                       null; // Neither credit nor debit
@@ -334,7 +353,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
 
-                  if (tempMap['amount'].toString() == "-1" || tempMap['transactionId'].toString() == "-1") {
+                  if (tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
                     print("Invalid Map, maybe promotional message");
