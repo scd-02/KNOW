@@ -8,6 +8,9 @@ import 'bills/bank_names.dart';
 import 'bills/message_section.dart';
 import 'bills/total_amount_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
@@ -15,6 +18,61 @@ class BillsMessage extends StatefulWidget {
   @override
   State<BillsMessage> createState() => _BillsMessageState();
 }
+
+// class LineChartWidget extends StatelessWidget {
+//   final List<ChartData> chartData;
+
+//   const LineChartWidget({super.key, required this.chartData});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return SfCartesianChart(
+//       // Configure the primary X axis for the chart
+//       primaryXAxis: DateTimeAxis(
+//         intervalType:
+//             DateTimeIntervalType.days, // Set the interval type to days
+//         dateFormat: DateFormat.yMd(), // Use year, month, day format for labels
+//         edgeLabelPlacement:
+//             EdgeLabelPlacement.shift, // Shift labels to avoid overlap
+//       ),
+//       // Configure the primary Y axis for the chart
+//       primaryYAxis: NumericAxis(
+//         title: const AxisTitle(text: 'Amount'), // Set the Y axis title
+//         numberFormat:
+//             NumberFormat.compact(), // Use compact number format for labels
+//         edgeLabelPlacement:
+//             EdgeLabelPlacement.shift, // Shift labels to avoid overlap
+//       ),
+//       // Define the series of the chart, in this case, a LineSeries
+//       series: <CartesianSeries<dynamic, dynamic>>[
+//         LineSeries<ChartData, DateTime>(
+//           // Provide the data source for the series
+//           dataSource: chartData,
+//           // Map the X value from the ChartData object's date property
+//           xValueMapper: (ChartData data, _) => data.date,
+//           // Map the Y value from the ChartData object's amount property
+//           yValueMapper: (ChartData data, _) => data.amount,
+//           // Set the name of the series (for legend and tooltip)
+//           name: 'Amount',
+//           // Configure data labels to be visible
+//           dataLabelSettings: const DataLabelSettings(isVisible: true),
+//           // Enable tooltip for the series
+//           enableTooltip: true,
+//         ) as CartesianSeries<dynamic,
+//             dynamic>, // Cast the LineSeries to CartesianSeries
+//       ],
+//       // Configure the tooltip behavior for the chart
+//       tooltipBehavior: TooltipBehavior(enable: true),
+//     );
+//   }
+// }
+
+// class ChartData {
+//   final DateTime date;
+//   final double amount;
+
+//   ChartData({required this.date, required this.amount});
+// }
 
 class _BillsMessageState extends State<BillsMessage> {
   final Telephony telephony = Telephony.instance;
@@ -28,6 +86,8 @@ class _BillsMessageState extends State<BillsMessage> {
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
   Set<String> promotionalMessageList = {};
+  // final List<FlSpot> _spots = [];
+  // bool _showGraph = false;
 
   @override
   void initState() {
@@ -96,20 +156,53 @@ class _BillsMessageState extends State<BillsMessage> {
               onEndDateSelected: (date) => _endDate = date,
             ),
             const SizedBox(height: 10),
-
-            if (_transactionInfoList.isNotEmpty)
-              MessageSection(transactionInfoList: _transactionInfoList),
-            // Expanded(
-            //   child: ListView(
-            //     children: [
-            //       for (var info in _transactionInfoList)
-            //         MessageSection(info),
-            //     ],
-            //   ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     setState(() {
+            //       _showGraph = !_showGraph;
+            //       if (_showGraph) {
+            //         _updateGraph();
+            //       }
+            //     });
+            //   },
+            //   child: Text(_showGraph ? 'Hide Graph' : 'Show Graph'),
             // ),
-            // MessageSection(title: 'Credited', messages: _creditedMessages),
-            // const SizedBox(height: 10),
-            // MessageSection(title: 'Debited', messages: _debitedMessages),
+            // if (_showGraph)
+            //   Expanded(
+            //     flex: 2, // Adjust flex according to your layout needs
+            //     child: SingleChildScrollView(
+            //       scrollDirection: Axis.horizontal,
+            //       child: SizedBox(
+            //         width: MediaQuery.of(context).size.width,
+            //         child: LineChartWidget(chartData: [
+            //           for (var spot in _spots)
+            //             ChartData(
+            //               date: DateTime.fromMillisecondsSinceEpoch(
+            //                   spot.x.toInt()),
+            //               amount: spot.y,
+            //             ),
+            //         ]),
+            //       ),
+            //     ),
+            //   ),
+            //   const SizedBox(height: 10),
+            if (_transactionInfoList.isNotEmpty)
+              Expanded(
+                child: ListView(
+                  children: [
+                    for (var info in _transactionInfoList)
+                      buildMessageContainer(info),
+                  ],
+                ),
+              ),
+            if (_transactionInfoList.isEmpty)
+              const Expanded(
+                child: Center(
+                  child: Text('No Transactions Info',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
             const SizedBox(height: 10),
             TotalAmountSection(
               totalCreditedAmount: totalCreditedAmount,
@@ -180,7 +273,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.85.170:8000/bank/update',
+                  'http://192.168.124.170:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -212,87 +305,85 @@ class _BillsMessageState extends State<BillsMessage> {
             Future<void> createTransactionInfo(List<dynamic> bankObjList,
                 Map<String, dynamic> transactionInfo, String body) async {
               // for (var bankObj in bankObjList) {
-                var regex = RegExp(objHeader['regexPattern']);
-                var match = regex.firstMatch(body);
-                var propertyMapString = objHeader['propertyMap'];
-                var propertyMap = json.decode(propertyMapString);
+              var regex = RegExp(objHeader['regexPattern']);
+              var match = regex.firstMatch(body);
+              var propertyMapString = objHeader['propertyMap'];
+              var propertyMap = json.decode(propertyMapString);
 
-                transactionInfo = {
-                  'accountNumber':
-                      int.parse(propertyMap['accountNumber'].toString()) == -1
-                          ? ""
-                          : match != null
-                              ? match.group(int.parse(
-                                  propertyMap['accountNumber'].toString()))
-                              : "",
-                  'date': int.parse(propertyMap['date'].toString()) == -1
-                      ? ""
-                      : match != null
-                          ? match
-                              .group(int.parse(propertyMap['date'].toString()))
-                          : "",
-                  'time': int.parse(propertyMap['time'].toString()) == -1
-                      ? ""
-                      : match != null
-                          ? match
-                              .group(int.parse(propertyMap['time'].toString()))
-                          : "",
-                  'transactionId':
-                      int.parse(propertyMap['transactionId'].toString()) == -1
-                          ? ""
-                          : match != null
-                              ? match.group(int.parse(
-                                  propertyMap['transactionId'].toString()))
-                              : "",
-                  'transactionType': objHeader['transactionType'],
-                };
+              transactionInfo = {
+                'accountNumber': int.parse(
+                            propertyMap['accountNumber'].toString()) ==
+                        -1
+                    ? ""
+                    : match != null
+                        ? match.group(
+                            int.parse(propertyMap['accountNumber'].toString()))
+                        : "",
+                'date': int.parse(propertyMap['date'].toString()) == -1
+                    ? ""
+                    : match != null
+                        ? match.group(int.parse(propertyMap['date'].toString()))
+                        : "",
+                'time': int.parse(propertyMap['time'].toString()) == -1
+                    ? ""
+                    : match != null
+                        ? match.group(int.parse(propertyMap['time'].toString()))
+                        : "",
+                'transactionId': int.parse(
+                            propertyMap['transactionId'].toString()) ==
+                        -1
+                    ? ""
+                    : match != null
+                        ? match.group(
+                            int.parse(propertyMap['transactionId'].toString()))
+                        : "",
+                'transactionType': objHeader['transactionType'],
+              };
 
-                // Extract amount if it exists in propertyMap
-                if (propertyMap.containsKey('amount')) {
-                  var amountIndex = propertyMap['amount'];
-                  var amountString = match?.group(amountIndex);
-                  if (amountString != null) {
-                    
-                    // Remove commas from the amount string
-                    var cleanedAmountString = amountString.replaceAll(",", "");
-                    // Convert the cleaned amount string to a double
-                    transactionInfo['amount'] =
-                        double.parse(cleanedAmountString);
-                  } else {
-                      promotionalMessageList.add(body);
-                    await _savePromotionalMessageList();
-                    return;
-                    // Handle the case when amount is not captured
-                    // transactionInfo['amount'] =
-                    //     null; // Or any other default value
-                  }
+              // Extract amount if it exists in propertyMap
+              if (propertyMap.containsKey('amount')) {
+                var amountIndex = propertyMap['amount'];
+                var amountString = match?.group(amountIndex);
+                if (amountString != null) {
+                  // Remove commas from the amount string
+                  var cleanedAmountString = amountString.replaceAll(",", "");
+                  // Convert the cleaned amount string to a double
+                  transactionInfo['amount'] = double.parse(cleanedAmountString);
                 } else {
+                  promotionalMessageList.add(body);
+                  await _savePromotionalMessageList();
                   return;
-                  // transactionInfo['amount'] = null;
+                  // Handle the case when amount is not captured
+                  // transactionInfo['amount'] =
+                  //     null; // Or any other default value
                 }
-                print("Transaction info in create funciton : $transactionInfo");
-                // Check if body contains 'credit' or 'debit' and set type accordingly
-                if (transactionInfo['transactionType'] == 'credited') {
-                  print("credited");
-                  // transactionInfo['type'] = 'credited';
-                  creditedMessages.add(body);
-                  creditedAmount +=
-                      transactionInfo['amount'] ?? 0; // Added null check here
-                } else if (transactionInfo['transactionType'] == 'debited') {
-                  // transactionInfo['type'] = 'debited';
-                  debitedMessages.add(body);
-                  debitedAmount +=
-                      transactionInfo['amount'] ?? 0; // Added null check here
-                } else {
-                  transactionInfo['transactionType'] =
-                      null; // Neither credit nor debit
-                }
+              } else {
+                return;
+                // transactionInfo['amount'] = null;
+              }
+              print("Transaction info in create funciton : $transactionInfo");
+              // Check if body contains 'credit' or 'debit' and set type accordingly
+              if (transactionInfo['transactionType'] == 'credited') {
+                print("credited");
+                // transactionInfo['type'] = 'credited';
+                creditedMessages.add(body);
+                creditedAmount +=
+                    transactionInfo['amount'] ?? 0; // Added null check here
+              } else if (transactionInfo['transactionType'] == 'debited') {
+                // transactionInfo['type'] = 'debited';
+                debitedMessages.add(body);
+                debitedAmount +=
+                    transactionInfo['amount'] ?? 0; // Added null check here
+              } else {
+                transactionInfo['transactionType'] =
+                    null; // Neither credit nor debit
+              }
 
-                // Add transaction info to the list
-                transactionInfoList.add(transactionInfo);
+              // Add transaction info to the list
+              transactionInfoList.add(transactionInfo);
 
-                // Print transaction info
-                print('Transaction Info: $transactionInfo');
+              // Print transaction info
+              print('Transaction Info: $transactionInfo');
               // }
             }
 
@@ -451,8 +542,7 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6) {
                 header = header.substring(header.length - 6).toLowerCase();
               }
-              if (!promotionalMessageList
-                  .contains((messageObj.body ?? ''))) {
+              if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
                 String body = (messageObj.body ?? '').replaceAll('\n', ' ');
                 if ((body.toLowerCase().contains('credit') ||
                     body.toLowerCase().contains('debit') ||
@@ -472,6 +562,7 @@ class _BillsMessageState extends State<BillsMessage> {
               totalCreditedAmount = creditedAmount;
               totalDebitedAmount = debitedAmount;
               _transactionInfoList = transactionInfoList;
+              //_updateGraph();
             });
           }
         },
@@ -479,4 +570,24 @@ class _BillsMessageState extends State<BillsMessage> {
       ),
     );
   }
+
+//  void _updateGraph() {
+//     _spots.clear();
+//     if (_startDate != null && _endDate != null) {
+//       int days = _endDate!.difference(_startDate!).inDays;
+//       double increment = (totalCreditedAmount - totalDebitedAmount) / days;
+
+//       DateTime currentDate = _startDate!;
+//       for (int i = 0; i <= days; i++) {
+//         double expense = totalDebitedAmount + (increment * i);
+//         String type = expense > 0
+//             ? 'Debited'
+//             : 'Credited'; // Determine type based on amount
+//         _spots.add(
+//             FlSpot(currentDate.millisecondsSinceEpoch.toDouble(), expense));
+//         //_spots.add(FlSpot(expense, type as double)); // This line should likely be removed or corrected
+//         currentDate = currentDate.add(const Duration(days: 1));
+//       }
+//     }
+//   }
 }
