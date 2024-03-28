@@ -161,8 +161,6 @@ class _BillsMessageState extends State<BillsMessage> {
               );
             }
 
-            Map<String, dynamic> transactionInfo = {};
-
             Future<bool> updateTemplate(String bankName, String message) async {
               try {
                 print(bankName);
@@ -192,6 +190,9 @@ class _BillsMessageState extends State<BillsMessage> {
               }
               return false;
             }
+
+            Map<String, dynamic> transactionInfo = {};
+            List<Map<String, dynamic>> transactionInfoList = [];
 
             void createTransactionInfo(List<dynamic> bankObjList,
                 Map<String, dynamic> transactionInfo, String body) {
@@ -255,6 +256,9 @@ class _BillsMessageState extends State<BillsMessage> {
                   transactionInfo['transactionType'] =
                       null; // Neither credit nor debit
                 }
+
+                // Add transaction info to the list
+                transactionInfoList.add(transactionInfo);
 
                 // Print transaction info
                 print('Transaction Info: $transactionInfo');
@@ -367,6 +371,9 @@ class _BillsMessageState extends State<BillsMessage> {
                     transactionInfo['transactionType'] =
                         null; // Neither credit nor debit
                   }
+
+                  // Add transaction info to the list
+                  transactionInfoList.add(transactionInfo);
 
                   print(transactionInfo);
                 } else {
