@@ -119,6 +119,11 @@ const addTemplate = async (req, res) => {
     for (let i = 0; i < 2; i++) {
       apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
+      if (obj.transactionType == "spam") {
+        return await res
+          .status(201)
+          .json(responseSchema(true, "Spam message!", apiResponse));
+      }
       rxPattern = obj.regexPattern;
       propMap = obj.propertyMap;
       transType = obj.transactionType;
