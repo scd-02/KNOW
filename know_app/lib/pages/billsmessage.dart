@@ -18,13 +18,13 @@ class BillsMessage extends StatefulWidget {
 
 class _BillsMessageState extends State<BillsMessage> {
   final Telephony telephony = Telephony.instance;
-  List<String?> _creditedMessages = [];
-  List<String?> _debitedMessages = [];
+  // List<String?> _creditedMessages = [];
+  // List<String?> _debitedMessages = [];
   DateTime? _startDate;
   DateTime? _endDate;
   double totalCreditedAmount = 0.0;
   double totalDebitedAmount = 0.0;
-
+  List<Map<String, dynamic>> _transactionInfoList = [];
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
   Set<String> promotionalMessageList = {};
@@ -93,9 +93,20 @@ class _BillsMessageState extends State<BillsMessage> {
               onEndDateSelected: (date) => _endDate = date,
             ),
             const SizedBox(height: 10),
-            MessageSection(title: 'Credited', messages: _creditedMessages),
-            const SizedBox(height: 10),
-            MessageSection(title: 'Debited', messages: _debitedMessages),
+
+            if (_transactionInfoList.isNotEmpty)
+              MessageSection(transactionInfoList: _transactionInfoList),
+            // Expanded(
+            //   child: ListView(
+            //     children: [
+            //       for (var info in _transactionInfoList)
+            //         MessageSection(info),
+            //     ],
+            //   ),
+            // ),
+            // MessageSection(title: 'Credited', messages: _creditedMessages),
+            // const SizedBox(height: 10),
+            // MessageSection(title: 'Debited', messages: _debitedMessages),
             const SizedBox(height: 10),
             TotalAmountSection(
               totalCreditedAmount: totalCreditedAmount,
@@ -166,7 +177,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.85.139:8000/bank/update',
+                  'http://192.168.85.170:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -294,7 +305,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.85.139:8000/bank/add',
+                  'http://192.168.124.170:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -431,10 +442,11 @@ class _BillsMessageState extends State<BillsMessage> {
             }
 
             setState(() {
-              _creditedMessages = creditedMessages;
-              _debitedMessages = debitedMessages;
+              // _creditedMessages = creditedMessages;
+              // _debitedMessages = debitedMessages;
               totalCreditedAmount = creditedAmount;
               totalDebitedAmount = debitedAmount;
+              _transactionInfoList = transactionInfoList;
             });
           }
         },
