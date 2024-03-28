@@ -63,17 +63,20 @@ class _BillsMessageState extends State<BillsMessage> {
         _prefs.getString('promotional_message');
     if (promotionalMessageJson != null) {
       setState(() {
-        // promotionalMessageList
-        //     .clear(); // Clear the map before loading from local storage
-        promotionalMessageList.addAll(json.decode(promotionalMessageJson));
+        // Decode JSON and cast each element to String before adding to the Set
+        List<dynamic> decodedList = json.decode(promotionalMessageJson);
+        promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
       });
     }
   }
 
   Future<void> _savePromotionalMessageList() async {
-    // Save bank templates to local storage
+    // Convert Set to List before encoding
+    List<String> promotionalMessageListAsList = promotionalMessageList.toList();
+
+    // Save promotional message list to local storage
     await _prefs.setString(
-        'promotional_message', json.encode(promotionalMessageList));
+        'promotional_message', json.encode(promotionalMessageListAsList));
   }
 
   @override
@@ -166,7 +169,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.85.139:8000/bank/update',
+                  'http://192.168.124.139:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -193,34 +196,44 @@ class _BillsMessageState extends State<BillsMessage> {
 
             Map<String, dynamic> transactionInfo = {};
             List<Map<String, dynamic>> transactionInfoList = [];
+            Map<String, dynamic> objHeader = {};
 
-            void createTransactionInfo(List<dynamic> bankObjList,
-                Map<String, dynamic> transactionInfo, String body) {
-              for (var bankObj in bankObjList) {
-                var regex = RegExp(bankObj['regexPattern']);
+            Future<void> createTransactionInfo(List<dynamic> bankObjList,
+                Map<String, dynamic> transactionInfo, String body) async {
+              // for (var bankObj in bankObjList) {
+                var regex = RegExp(objHeader['regexPattern']);
                 var match = regex.firstMatch(body);
-                var propertyMapString = bankObj['propertyMap'];
+                var propertyMapString = objHeader['propertyMap'];
                 var propertyMap = json.decode(propertyMapString);
+
                 transactionInfo = {
-                  'accountNumber': int.parse(
-                              propertyMap['accountNumber'].toString()) ==
-                          -1
-                      ? ""
-                      : match!.group(
-                          int.parse(propertyMap['accountNumber'].toString())),
+                  'accountNumber':
+                      int.parse(propertyMap['accountNumber'].toString()) == -1
+                          ? ""
+                          : match != null
+                              ? match.group(int.parse(
+                                  propertyMap['accountNumber'].toString()))
+                              : "",
                   'date': int.parse(propertyMap['date'].toString()) == -1
                       ? ""
-                      : match!.group(int.parse(propertyMap['date'].toString())),
+                      : match != null
+                          ? match
+                              .group(int.parse(propertyMap['date'].toString()))
+                          : "",
                   'time': int.parse(propertyMap['time'].toString()) == -1
                       ? ""
-                      : match!.group(int.parse(propertyMap['time'].toString())),
-                  'transactionId': int.parse(
-                              propertyMap['transactionId'].toString()) ==
-                          -1
-                      ? ""
-                      : match!.group(
-                          int.parse(propertyMap['transactionId'].toString())),
-                  'transactionType': bankObj['transactionType'],
+                      : match != null
+                          ? match
+                              .group(int.parse(propertyMap['time'].toString()))
+                          : "",
+                  'transactionId':
+                      int.parse(propertyMap['transactionId'].toString()) == -1
+                          ? ""
+                          : match != null
+                              ? match.group(int.parse(
+                                  propertyMap['transactionId'].toString()))
+                              : "",
+                  'transactionType': objHeader['transactionType'],
                 };
 
                 // Extract amount if it exists in propertyMap
@@ -228,30 +241,37 @@ class _BillsMessageState extends State<BillsMessage> {
                   var amountIndex = propertyMap['amount'];
                   var amountString = match?.group(amountIndex);
                   if (amountString != null) {
+                    
                     // Remove commas from the amount string
                     var cleanedAmountString = amountString.replaceAll(",", "");
                     // Convert the cleaned amount string to a double
                     transactionInfo['amount'] =
                         double.parse(cleanedAmountString);
                   } else {
+                      promotionalMessageList.add(body);
+                    await _savePromotionalMessageList();
+                    return;
                     // Handle the case when amount is not captured
-                    transactionInfo['amount'] =
-                        null; // Or any other default value
+                    // transactionInfo['amount'] =
+                    //     null; // Or any other default value
                   }
                 } else {
-                  transactionInfo['amount'] = null;
+                  return;
+                  // transactionInfo['amount'] = null;
                 }
-
+                print("Transaction info in create funciton : $transactionInfo");
                 // Check if body contains 'credit' or 'debit' and set type accordingly
                 if (transactionInfo['transactionType'] == 'credited') {
                   print("credited");
                   // transactionInfo['type'] = 'credited';
                   creditedMessages.add(body);
-                  creditedAmount += transactionInfo['amount'];
+                  creditedAmount +=
+                      transactionInfo['amount'] ?? 0; // Added null check here
                 } else if (transactionInfo['transactionType'] == 'debited') {
                   // transactionInfo['type'] = 'debited';
                   debitedMessages.add(body);
-                  debitedAmount += transactionInfo['amount'];
+                  debitedAmount +=
+                      transactionInfo['amount'] ?? 0; // Added null check here
                 } else {
                   transactionInfo['transactionType'] =
                       null; // Neither credit nor debit
@@ -262,7 +282,7 @@ class _BillsMessageState extends State<BillsMessage> {
 
                 // Print transaction info
                 print('Transaction Info: $transactionInfo');
-              }
+              // }
             }
 
             Future<bool> checkRegexMatch(
@@ -273,6 +293,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   var match = regex.firstMatch(body);
                   if (match != null) {
                     print('Regex pattern matched');
+                    objHeader = bankObj;
                     return true;
                   }
                 }
@@ -294,7 +315,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.85.139:8000/bank/add',
+                  'http://192.168.124.139:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -310,6 +331,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   await _savePromotionalMessageList();
                   //   return;
                   // }
+
                   var newTemplate = response.data['data']['template'];
 
                   bankTemplates[bankName] = newTemplate;
@@ -333,8 +355,10 @@ class _BillsMessageState extends State<BillsMessage> {
                   print("Map returned from backend");
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
-
-                  if (tempMap['amount'].toString() == "-1") {
+                  print("the temp map $tempMap");
+                  if (tempMap['transactionType'] == 'spam' ||
+                      ['amount'].toString() == "-1" ||
+                      tempMap['transactionId'].toString() == "-1") {
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
                     print("Invalid Map, maybe promotional message");
@@ -375,7 +399,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   // Add transaction info to the list
                   transactionInfoList.add(transactionInfo);
 
-                  print(transactionInfo);
+                  print("When temp map created $transactionInfo");
                 } else {
                   print('Failed to add template for bank $bankName');
                 }
@@ -398,6 +422,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   } else {
                     print(
                         'Regex pattern did not match for bank $bankName. Wait while creating new template.');
+
                     await addNewTemplate(bankName, body);
                     // Check again if regex pattern matches after adding new template
                   }
@@ -416,7 +441,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 header = header.substring(header.length - 6).toLowerCase();
               }
               if (!promotionalMessageList
-                  .contains((messageObj.body ?? '').toLowerCase())) {
+                  .contains((messageObj.body ?? ''))) {
                 String body = (messageObj.body ?? '').replaceAll('\n', ' ');
                 if ((body.toLowerCase().contains('credit') ||
                     body.toLowerCase().contains('debit') ||
