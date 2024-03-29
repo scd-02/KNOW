@@ -29,12 +29,13 @@ class _BillsMessageState extends State<BillsMessage> {
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
   Set<String> promotionalMessageList = {};
-
+  Set<String> spamTemplate = {};
   @override
   void initState() {
     super.initState();
     _loadBankTemplates(); // Load bank templates from local storage when the widget is initialized
     _loadPromotionalMessageList(); // Load promotional message list from local storage when the widget is initialized
+    _loadSpamMessageList();
   }
 
   Future<void> _loadBankTemplates() async {
@@ -78,6 +79,27 @@ class _BillsMessageState extends State<BillsMessage> {
     // Save promotional message list to local storage
     await _prefs.setString(
         'promotional_message', json.encode(promotionalMessageListAsList));
+  }
+
+  Future<void> _loadSpamMessageList() async {
+    _prefs = await SharedPreferences.getInstance();
+    // Load promotional message list from local storage
+    final String? spamMessageJson = _prefs.getString('spam_message');
+    if (spamMessageJson != null) {
+      setState(() {
+        // Decode JSON and cast each element to String before adding to the Set
+        List<dynamic> decodedList = json.decode(spamMessageJson);
+        spamTemplate.addAll(decodedList.map((e) => e.toString()));
+      });
+    }
+  }
+
+  Future<void> _saveSpamMessageList() async {
+    // Convert Set to List before encoding
+    List<String> spamMessageListAsList = spamTemplate.toList();
+
+    // Save promotional message list to local storage
+    await _prefs.setString('spam_message', json.encode(spamMessageListAsList));
   }
 
   @override
@@ -296,36 +318,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     return true;
                   }
                 }
-                Map<String, List<Set<String>>> spamTemplateMap = {};
-                if (spamTemplateMap.containsKey(bankName)) {
-                  spamTemplateMap[bankName]!.forEach((spamTemplate) {
-                    List<String> bodyTokens = body
-                        .toLowerCase()
-                        .split(RegExp(r'\s+'))
-                        .where((word) => RegExp(r'^\w+$').hasMatch(word))
-                        .toList();
-                    int count = 0;
-                    for (String s in bodyTokens) {
-                      // Your logic here
-                      if (spamTemplate.contains(s)) {
-                        count++;
-                      }
-                    }
-                    // if ((spamTemplate.length > 8 &&
-                    //         spamTemplate.length - count <= 3) ||
-                    //     (spamTemplate.length <= 8 &&
-                    //         count / spamTemplate.length >= 0.6)) {
-                    //   //logic for match
-                    // } else {
-                    if (spamTemplate.length == count) {
-                      //logic for match
-                    } else {
-                      //logic for not match
-                    }
-                  });
-                } else {
-                  print('Bank name $bankName not found in spamTemplateMap.');
-                }
+
                 return false; // Return false if no template matches
               } catch (e) {
                 print('Error while checking regex match: $e');
@@ -364,19 +357,16 @@ class _BillsMessageState extends State<BillsMessage> {
                   var newTemplate = response.data['data']['template'];
                   var tempMap = json.decode(newTemplate);
                   if (tempMap['transactionType'] == "spam") {
-                    Set<String> spamTemplate = Set.from(tempMap['regexPattern']
+                    spamTemplate.add(message
                         .toLowerCase()
                         .split(RegExp(r'\s+'))
-                        .where((word) => RegExp(r'^\w+$').hasMatch(word)));
-
-                    // save as a map of bankname and template list
-                    Map<String, List<Set<String>>> spamTemplateMap = {};
-                    if (spamTemplateMap[bankName] != null) {
-                      spamTemplateMap[bankName]!.add(spamTemplate);
-                    } else {
-                      spamTemplateMap[bankName] = [spamTemplate];
-                    }
+                        .where((word) => RegExp(r'^\w+$').hasMatch(word))
+                        .join(' '));
+                    _saveSpamMessageList();
+                    return;
                   }
+                  // save as a map of bankname and template list
+
                   tempMap['regexPattern'] = tempMap['regexPattern'] =
                       bankTemplates[bankName] = newTemplate;
                   await _saveBankTemplates();
@@ -458,11 +448,18 @@ class _BillsMessageState extends State<BillsMessage> {
                   var bankObj = bankTemplates[bankName];
 
                   // Check if the regex pattern matches the body
+
                   if (await checkRegexMatch(bankObj, body, bankName)) {
                     createTransactionInfo(bankObj, transactionInfo, body);
                     print('Regex pattern matched for bank $bankName');
                     // Handle the matched pattern accordingly
                     return;
+                  } else if (spamTemplate.contains(body
+                      .toLowerCase()
+                      .split(RegExp(r'\s+'))
+                      .where((word) => RegExp(r'^\w+$').hasMatch(word))
+                      .join(' '))) {
+                    print('spam message : $body');
                   } else {
                     print(
                         'Regex pattern did not match for bank $bankName. Wait while creating new template.');
