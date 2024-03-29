@@ -11,9 +11,9 @@ async function details(message) {
         content: ` donot explain . 
           here, user asks for a map and assitant replies a map where keys inclosed in double quotes format with following keys : transactionType, accountNo, amount, date, time, transactionId, balance.
            assign value -1 for the keys not found in the message. 
-           transactionType can only be either "credited" or "debited" or "spam". any message that doesn't conclude that amount has already been credited or debited then that message is a "spam".  
+           transactionType can only be either "credited" or "debited" .  
            keep amount value and balance value in numeric and only upto two decimal places.
-           for transaction id always take numeric part of the string. For messages with transaction type spam, assign value of each key -1 except the transactionType key. `,
+           for transaction id always take numeric part of the string. `,
       },
       {
         role: "user",
@@ -29,22 +29,6 @@ async function details(message) {
           "transactionId": 328546155288,
           "balance": -1,
           "transactionType": "debited"
-        }`,
-      },
-      {
-        role: "user",
-        content: ` ANURAG JAIN has requested money from you on Google Pay. On approving the request, INR 31.00 will be debited from your A/c - Axis Bank`,
-      },
-      {
-        role: "assistant",
-        content: `{
-          "amount": -1 ,
-          "accountNo": -1 ,
-          "date": -1 ,
-          "time": -1,
-          "transactionId": -1,
-          "balance": -1,
-          "transactionType": "spam"
         }`,
       },
       {
