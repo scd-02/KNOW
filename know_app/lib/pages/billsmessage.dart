@@ -8,9 +8,7 @@ import 'bills/bank_names.dart';
 import 'bills/message_section.dart';
 import 'bills/total_amount_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
+
 
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
@@ -18,61 +16,6 @@ class BillsMessage extends StatefulWidget {
   @override
   State<BillsMessage> createState() => _BillsMessageState();
 }
-
-// class LineChartWidget extends StatelessWidget {
-//   final List<ChartData> chartData;
-
-//   const LineChartWidget({super.key, required this.chartData});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SfCartesianChart(
-//       // Configure the primary X axis for the chart
-//       primaryXAxis: DateTimeAxis(
-//         intervalType:
-//             DateTimeIntervalType.days, // Set the interval type to days
-//         dateFormat: DateFormat.yMd(), // Use year, month, day format for labels
-//         edgeLabelPlacement:
-//             EdgeLabelPlacement.shift, // Shift labels to avoid overlap
-//       ),
-//       // Configure the primary Y axis for the chart
-//       primaryYAxis: NumericAxis(
-//         title: const AxisTitle(text: 'Amount'), // Set the Y axis title
-//         numberFormat:
-//             NumberFormat.compact(), // Use compact number format for labels
-//         edgeLabelPlacement:
-//             EdgeLabelPlacement.shift, // Shift labels to avoid overlap
-//       ),
-//       // Define the series of the chart, in this case, a LineSeries
-//       series: <CartesianSeries<dynamic, dynamic>>[
-//         LineSeries<ChartData, DateTime>(
-//           // Provide the data source for the series
-//           dataSource: chartData,
-//           // Map the X value from the ChartData object's date property
-//           xValueMapper: (ChartData data, _) => data.date,
-//           // Map the Y value from the ChartData object's amount property
-//           yValueMapper: (ChartData data, _) => data.amount,
-//           // Set the name of the series (for legend and tooltip)
-//           name: 'Amount',
-//           // Configure data labels to be visible
-//           dataLabelSettings: const DataLabelSettings(isVisible: true),
-//           // Enable tooltip for the series
-//           enableTooltip: true,
-//         ) as CartesianSeries<dynamic,
-//             dynamic>, // Cast the LineSeries to CartesianSeries
-//       ],
-//       // Configure the tooltip behavior for the chart
-//       tooltipBehavior: TooltipBehavior(enable: true),
-//     );
-//   }
-// }
-
-// class ChartData {
-//   final DateTime date;
-//   final double amount;
-
-//   ChartData({required this.date, required this.amount});
-// }
 
 class _BillsMessageState extends State<BillsMessage> {
   final Telephony telephony = Telephony.instance;
@@ -86,8 +29,6 @@ class _BillsMessageState extends State<BillsMessage> {
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
   Set<String> promotionalMessageList = {};
-  // final List<FlSpot> _spots = [];
-  // bool _showGraph = false;
 
   @override
   void initState() {
@@ -167,25 +108,7 @@ class _BillsMessageState extends State<BillsMessage> {
             //   },
             //   child: Text(_showGraph ? 'Hide Graph' : 'Show Graph'),
             // ),
-            // if (_showGraph)
-            //   Expanded(
-            //     flex: 2, // Adjust flex according to your layout needs
-            //     child: SingleChildScrollView(
-            //       scrollDirection: Axis.horizontal,
-            //       child: SizedBox(
-            //         width: MediaQuery.of(context).size.width,
-            //         child: LineChartWidget(chartData: [
-            //           for (var spot in _spots)
-            //             ChartData(
-            //               date: DateTime.fromMillisecondsSinceEpoch(
-            //                   spot.x.toInt()),
-            //               amount: spot.y,
-            //             ),
-            //         ]),
-            //       ),
-            //     ),
-            //   ),
-            //   const SizedBox(height: 10),
+            //const SizedBox(height: 10),
             if (_transactionInfoList.isNotEmpty)
               Expanded(
                 child: ListView(
@@ -570,24 +493,4 @@ class _BillsMessageState extends State<BillsMessage> {
       ),
     );
   }
-
-//  void _updateGraph() {
-//     _spots.clear();
-//     if (_startDate != null && _endDate != null) {
-//       int days = _endDate!.difference(_startDate!).inDays;
-//       double increment = (totalCreditedAmount - totalDebitedAmount) / days;
-
-//       DateTime currentDate = _startDate!;
-//       for (int i = 0; i <= days; i++) {
-//         double expense = totalDebitedAmount + (increment * i);
-//         String type = expense > 0
-//             ? 'Debited'
-//             : 'Credited'; // Determine type based on amount
-//         _spots.add(
-//             FlSpot(currentDate.millisecondsSinceEpoch.toDouble(), expense));
-//         //_spots.add(FlSpot(expense, type as double)); // This line should likely be removed or corrected
-//         currentDate = currentDate.add(const Duration(days: 1));
-//       }
-//     }
-//   }
 }
