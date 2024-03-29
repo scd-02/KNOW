@@ -169,7 +169,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.124.139:8000/bank/update',
+                  'http://192.168.227.139:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -201,87 +201,85 @@ class _BillsMessageState extends State<BillsMessage> {
             Future<void> createTransactionInfo(List<dynamic> bankObjList,
                 Map<String, dynamic> transactionInfo, String body) async {
               // for (var bankObj in bankObjList) {
-                var regex = RegExp(objHeader['regexPattern']);
-                var match = regex.firstMatch(body);
-                var propertyMapString = objHeader['propertyMap'];
-                var propertyMap = json.decode(propertyMapString);
+              var regex = RegExp(objHeader['regexPattern']);
+              var match = regex.firstMatch(body);
+              var propertyMapString = objHeader['propertyMap'];
+              var propertyMap = json.decode(propertyMapString);
 
-                transactionInfo = {
-                  'accountNumber':
-                      int.parse(propertyMap['accountNumber'].toString()) == -1
-                          ? ""
-                          : match != null
-                              ? match.group(int.parse(
-                                  propertyMap['accountNumber'].toString()))
-                              : "",
-                  'date': int.parse(propertyMap['date'].toString()) == -1
-                      ? ""
-                      : match != null
-                          ? match
-                              .group(int.parse(propertyMap['date'].toString()))
-                          : "",
-                  'time': int.parse(propertyMap['time'].toString()) == -1
-                      ? ""
-                      : match != null
-                          ? match
-                              .group(int.parse(propertyMap['time'].toString()))
-                          : "",
-                  'transactionId':
-                      int.parse(propertyMap['transactionId'].toString()) == -1
-                          ? ""
-                          : match != null
-                              ? match.group(int.parse(
-                                  propertyMap['transactionId'].toString()))
-                              : "",
-                  'transactionType': objHeader['transactionType'],
-                };
+              transactionInfo = {
+                'accountNumber': int.parse(
+                            propertyMap['accountNumber'].toString()) ==
+                        -1
+                    ? ""
+                    : match != null
+                        ? match.group(
+                            int.parse(propertyMap['accountNumber'].toString()))
+                        : "",
+                'date': int.parse(propertyMap['date'].toString()) == -1
+                    ? ""
+                    : match != null
+                        ? match.group(int.parse(propertyMap['date'].toString()))
+                        : "",
+                'time': int.parse(propertyMap['time'].toString()) == -1
+                    ? ""
+                    : match != null
+                        ? match.group(int.parse(propertyMap['time'].toString()))
+                        : "",
+                'transactionId': int.parse(
+                            propertyMap['transactionId'].toString()) ==
+                        -1
+                    ? ""
+                    : match != null
+                        ? match.group(
+                            int.parse(propertyMap['transactionId'].toString()))
+                        : "",
+                'transactionType': objHeader['transactionType'],
+              };
 
-                // Extract amount if it exists in propertyMap
-                if (propertyMap.containsKey('amount')) {
-                  var amountIndex = propertyMap['amount'];
-                  var amountString = match?.group(amountIndex);
-                  if (amountString != null) {
-                    
-                    // Remove commas from the amount string
-                    var cleanedAmountString = amountString.replaceAll(",", "");
-                    // Convert the cleaned amount string to a double
-                    transactionInfo['amount'] =
-                        double.parse(cleanedAmountString);
-                  } else {
-                      promotionalMessageList.add(body);
-                    await _savePromotionalMessageList();
-                    return;
-                    // Handle the case when amount is not captured
-                    // transactionInfo['amount'] =
-                    //     null; // Or any other default value
-                  }
+              // Extract amount if it exists in propertyMap
+              if (propertyMap.containsKey('amount')) {
+                var amountIndex = propertyMap['amount'];
+                var amountString = match?.group(amountIndex);
+                if (amountString != null) {
+                  // Remove commas from the amount string
+                  var cleanedAmountString = amountString.replaceAll(",", "");
+                  // Convert the cleaned amount string to a double
+                  transactionInfo['amount'] = double.parse(cleanedAmountString);
                 } else {
+                  promotionalMessageList.add(body);
+                  await _savePromotionalMessageList();
                   return;
-                  // transactionInfo['amount'] = null;
+                  // Handle the case when amount is not captured
+                  // transactionInfo['amount'] =
+                  //     null; // Or any other default value
                 }
-                print("Transaction info in create funciton : $transactionInfo");
-                // Check if body contains 'credit' or 'debit' and set type accordingly
-                if (transactionInfo['transactionType'] == 'credited') {
-                  print("credited");
-                  // transactionInfo['type'] = 'credited';
-                  creditedMessages.add(body);
-                  creditedAmount +=
-                      transactionInfo['amount'] ?? 0; // Added null check here
-                } else if (transactionInfo['transactionType'] == 'debited') {
-                  // transactionInfo['type'] = 'debited';
-                  debitedMessages.add(body);
-                  debitedAmount +=
-                      transactionInfo['amount'] ?? 0; // Added null check here
-                } else {
-                  transactionInfo['transactionType'] =
-                      null; // Neither credit nor debit
-                }
+              } else {
+                return;
+                // transactionInfo['amount'] = null;
+              }
+              print("Transaction info in create funciton : $transactionInfo");
+              // Check if body contains 'credit' or 'debit' and set type accordingly
+              if (transactionInfo['transactionType'] == 'credited') {
+                print("credited");
+                // transactionInfo['type'] = 'credited';
+                creditedMessages.add(body);
+                creditedAmount +=
+                    transactionInfo['amount'] ?? 0; // Added null check here
+              } else if (transactionInfo['transactionType'] == 'debited') {
+                // transactionInfo['type'] = 'debited';
+                debitedMessages.add(body);
+                debitedAmount +=
+                    transactionInfo['amount'] ?? 0; // Added null check here
+              } else {
+                transactionInfo['transactionType'] =
+                    null; // Neither credit nor debit
+              }
 
-                // Add transaction info to the list
-                transactionInfoList.add(transactionInfo);
+              // Add transaction info to the list
+              transactionInfoList.add(transactionInfo);
 
-                // Print transaction info
-                print('Transaction Info: $transactionInfo');
+              // Print transaction info
+              print('Transaction Info: $transactionInfo');
               // }
             }
 
@@ -315,7 +313,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.124.139:8000/bank/add',
+                  'http://192.168.227.139:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -440,8 +438,7 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6) {
                 header = header.substring(header.length - 6).toLowerCase();
               }
-              if (!promotionalMessageList
-                  .contains((messageObj.body ?? ''))) {
+              if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
                 String body = (messageObj.body ?? '').replaceAll('\n', ' ');
                 if ((body.toLowerCase().contains('credit') ||
                     body.toLowerCase().contains('debit') ||
