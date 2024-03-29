@@ -10,6 +10,7 @@ import 'bills/message_section.dart';
 import 'bills/total_amount_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
 
@@ -19,13 +20,13 @@ class BillsMessage extends StatefulWidget {
 
 class _BillsMessageState extends State<BillsMessage> {
   final Telephony telephony = Telephony.instance;
-  List<String?> _creditedMessages = [];
-  List<String?> _debitedMessages = [];
+  // List<String?> _creditedMessages = [];
+  // List<String?> _debitedMessages = [];
   DateTime? _startDate;
   DateTime? _endDate;
   double totalCreditedAmount = 0.0;
   double totalDebitedAmount = 0.0;
-
+  List<Map<String, dynamic>> _transactionInfoList = [];
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
   Set<String> promotionalMessageList = {};
@@ -119,9 +120,35 @@ class _BillsMessageState extends State<BillsMessage> {
               onEndDateSelected: (date) => _endDate = date,
             ),
             const SizedBox(height: 10),
-            MessageSection(title: 'Credited', messages: _creditedMessages),
-            const SizedBox(height: 10),
-            MessageSection(title: 'Debited', messages: _debitedMessages),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     setState(() {
+            //       _showGraph = !_showGraph;
+            //       if (_showGraph) {
+            //         _updateGraph();
+            //       }
+            //     });
+            //   },
+            //   child: Text(_showGraph ? 'Hide Graph' : 'Show Graph'),
+            // ),
+            //const SizedBox(height: 10),
+            if (_transactionInfoList.isNotEmpty)
+              Expanded(
+                child: ListView(
+                  children: [
+                    for (var info in _transactionInfoList)
+                      buildMessageContainer(info),
+                  ],
+                ),
+              ),
+            if (_transactionInfoList.isEmpty)
+              const Expanded(
+                child: Center(
+                  child: Text('No Transactions Info',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
             const SizedBox(height: 10),
             TotalAmountSection(
               totalCreditedAmount: totalCreditedAmount,
@@ -192,7 +219,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.124.139:8000/bank/update',
+                  'http://192.168.124.170:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -337,7 +364,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.124.139:8000/bank/add',
+                  'http://192.168.124.170:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -496,10 +523,12 @@ class _BillsMessageState extends State<BillsMessage> {
             }
 
             setState(() {
-              _creditedMessages = creditedMessages;
-              _debitedMessages = debitedMessages;
+              // _creditedMessages = creditedMessages;
+              // _debitedMessages = debitedMessages;
               totalCreditedAmount = creditedAmount;
               totalDebitedAmount = debitedAmount;
+              _transactionInfoList = transactionInfoList;
+              //_updateGraph();
             });
           }
         },
