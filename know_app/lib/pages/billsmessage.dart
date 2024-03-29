@@ -343,7 +343,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     'time': tempMap['time'],
                     'amount': tempMap['amount'],
                     'transactionId': tempMap['transactionId'],
-                    'transactionType': tempMap['isCreditOrDebit'],
+                    'transactionType': tempMap['transactionType'],
                   };
 
                   if (transactionInfo['amount'] is String) {
