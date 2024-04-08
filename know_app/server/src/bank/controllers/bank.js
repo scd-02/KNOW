@@ -82,19 +82,6 @@ const addTemplate = async (req, res) => {
   try {
     var { bankName, message } = req.body;
     bankName = bankName.toString();
-
-    // const isBlackListed = await bklist.findOne({
-    //   feature: "bank",
-    //   "list.itemName": bankName,
-    // });
-    // // if (isBlackListed) {
-    // if (isBlackListed) {
-    //   let features = await details(message);
-    //   let result = { bankName: bankName, features: features };
-    //   return await res
-    //     .status(201)
-    //     .json(responseSchema(true, "Pattern not found, details sent!", result));
-    // }
     const preExistingList = await Bank.findOne({ bankName: bankName });
     if (preExistingList) {
       for (const document of preExistingList.template) {
@@ -119,7 +106,10 @@ const addTemplate = async (req, res) => {
     for (let i = 0; i < 2; i++) {
       apiResponse = await finalResponse(message, err);
       const obj = JSON.parse(apiResponse);
-      if (obj.transactionType == "spam") {
+      rxPattern = obj.regexPattern;
+      propMap = obj.propertyMap;
+      transType = obj.transactionType;
+      if (transType == "spam") {
         let msgResponse = `{
           "amount": -1 ,
           "accountNo": -1 ,
@@ -134,9 +124,6 @@ const addTemplate = async (req, res) => {
           .status(201)
           .json(responseSchema(true, "Spam message!", result));
       }
-      rxPattern = obj.regexPattern;
-      propMap = obj.propertyMap;
-      transType = obj.transactionType;
       pattern = RegExp(rxPattern);
       match = message.match(pattern);
       if (match !== null) {

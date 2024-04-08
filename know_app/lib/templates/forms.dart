@@ -11,6 +11,7 @@ import 'package:know/pages/home.dart';
 class FormsPage extends StatefulWidget {
   // Constructor for the TravelPage widget
   const FormsPage({super.key});
+  @override
   State<StatefulWidget> createState() {
     return FormsPageState();
   }
@@ -18,7 +19,7 @@ class FormsPage extends StatefulWidget {
 
 class FormsPageState extends State<FormsPage> {
   TimeOfDay time = const TimeOfDay(hour: 10, minute: 30);
-  TextEditingController _dateController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   TextEditingController textInputController = TextEditingController();
   bool? check = false;
   void SetCheck(bool? c) {
@@ -33,6 +34,7 @@ class FormsPageState extends State<FormsPage> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     // Scaffold widget for the overall structure of the page
     return Scaffold(
@@ -56,7 +58,7 @@ class FormsPageState extends State<FormsPage> {
             alignment: Alignment.center,
             // Decoration for the leading container
             decoration: BoxDecoration(
-                color: Color(0xffF7F8F8),
+                color: const Color(0xffF7F8F8),
                 borderRadius: BorderRadius.circular(10)),
             // GestureDetector for handling taps on the leading widget
             child: GestureDetector(
@@ -64,7 +66,7 @@ class FormsPageState extends State<FormsPage> {
                 // Navigate to the HomePage when the leading widget is clicked
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => const HomePage()),
                 );
               },
               // SVG icon for the leading widget
@@ -84,7 +86,7 @@ class FormsPageState extends State<FormsPage> {
                 // Navigate to the TravelPage when the profile image is clicked
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => const HomePage()),
                 );
               },
               // Circular profile image in the app bar

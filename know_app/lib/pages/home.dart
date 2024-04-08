@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BillsMessage(),
+                            builder: (context) => const BillsMessage(),
                           ),
                         );
                         break;
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => FormsPage(),
+                            builder: (context) => const FormsPage(),
                           ),
                         );
                         break;
@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MedicalPage(),
+                            builder: (context) => const MedicalPage(),
                           ),
                         );
                         break;
@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TravelPage(),
+                            builder: (context) => const TravelPage(),
                           ),
                         );
                         break;
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProfilePage(),
+                            builder: (context) => const ProfilePage(),
                           ),
                         );
                         break;
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BillsPage(),
+                            builder: (context) => const BillsPage(),
                           ),
                         );
                         break;
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProfilePage(),
+                            builder: (context) => const ProfilePage(),
                           ),
                         );
                     }
@@ -155,7 +155,7 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           width: 50,
                           height: 50,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),

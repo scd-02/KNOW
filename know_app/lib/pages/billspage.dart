@@ -57,10 +57,11 @@ class _BillsPageState extends State<BillsPage> {
     fetchTemplates();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Templates'),
+        title: const Text('Templates'),
       ),
       body: ListView.builder(
         itemCount: templates.length,

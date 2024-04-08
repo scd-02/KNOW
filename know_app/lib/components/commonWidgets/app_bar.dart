@@ -39,7 +39,7 @@ class CustomAppBar extends StatelessWidget {
               // Navigate to the HomePage when the leading widget is clicked
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage()),
+                MaterialPageRoute(builder: (context) => const HomePage()),
               );
             },
             // SVG icon for the leading widget
@@ -63,7 +63,7 @@ class CustomAppBar extends StatelessWidget {
                 );
               },
               // Circular profile image in the app bar
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 20, // Adjust the radius based on your design
                 backgroundImage: AssetImage('assets/images/profile.jpg'),
               )),

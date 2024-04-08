@@ -24,7 +24,7 @@ class ShowPopup extends StatelessWidget {
           ),
           content: IntrinsicHeight(
             child: Container(
-              constraints: BoxConstraints(minHeight: 150, minWidth: 200),
+              constraints: const BoxConstraints(minHeight: 150, minWidth: 200),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,

@@ -13,20 +13,20 @@ class MedicalPage extends StatefulWidget {
 }
 
 class _MedicalPageState extends State<MedicalPage> {
-  List<Widget> _containersButton1 = [];
-  List<Widget> _containersButton2 = [];
+  final List<Widget> _containersButton1 = [];
+  final List<Widget> _containersButton2 = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
+      appBar: const PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(title: 'Medicals'),
       ),
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          search_bar.SearchBar(),
+          const search_bar.SearchBar(),
           // Use a ListView.builder to handle potentially many containers
           Expanded(
             child: ListView(
@@ -40,7 +40,7 @@ class _MedicalPageState extends State<MedicalPage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(left: 15.0),
+        padding: const EdgeInsets.only(left: 15.0),
         child: Align(
           alignment: Alignment.bottomLeft,
           child: MyFloatingActionButton(
@@ -70,15 +70,15 @@ class _MedicalPageState extends State<MedicalPage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff1D1617).withOpacity(0.11),
+            color: const Color(0xff1D1617).withOpacity(0.11),
             blurRadius: 40,
             spreadRadius: 0.0,
           )
         ],
       ),
       child: Container(
-        margin: EdgeInsets.all(16.0),
-        padding: EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         color: Colors.white,
         child: Column(
           children: [
@@ -88,7 +88,7 @@ class _MedicalPageState extends State<MedicalPage> {
             TextField(
               decoration: InputDecoration(
                 fillColor: Colors.white,
-                contentPadding: EdgeInsets.all(15),
+                contentPadding: const EdgeInsets.all(15),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,

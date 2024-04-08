@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       // Setting the theme for the entire application
       theme: ThemeData(fontFamily: 'Poppins'),
       // Setting the home page of the application
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }

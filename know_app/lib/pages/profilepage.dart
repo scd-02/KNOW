@@ -59,7 +59,7 @@ class ProfilePageState extends State<ProfilePage> {
                       ),
                       children: [
                         TextSpan(
-                          text: '$name',
+                          text: name,
                           style:
                               const TextStyle(fontSize: 25, color: Colors.grey),
                         ),
@@ -80,7 +80,7 @@ class ProfilePageState extends State<ProfilePage> {
                       ),
                       children: [
                         TextSpan(
-                          text: '$email',
+                          text: email,
                           style: const TextStyle(
                             fontSize: 25,
                             color: Colors.grey,
@@ -103,7 +103,7 @@ class ProfilePageState extends State<ProfilePage> {
                       ),
                       children: [
                         TextSpan(
-                          text: '$dateOfBirth',
+                          text: dateOfBirth,
                           style: const TextStyle(
                             fontSize: 25,
                             color: Colors.grey,

@@ -9,7 +9,6 @@ import 'bills/message_section.dart';
 import 'bills/total_amount_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
 
@@ -28,13 +27,14 @@ class _BillsMessageState extends State<BillsMessage> {
   List<Map<String, dynamic>> _transactionInfoList = [];
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
-  Set<String> promotionalMessageList = {};
-
+  // Set<String> promotionalMessageList = {};
+  Set<String> spamTemplate = {};
   @override
   void initState() {
     super.initState();
     _loadBankTemplates(); // Load bank templates from local storage when the widget is initialized
-    _loadPromotionalMessageList(); // Load promotional message list from local storage when the widget is initialized
+    // _loadPromotionalMessageList(); // Load promotional message list from local storage when the widget is initialized
+    _loadSpamMessageList();
   }
 
   Future<void> _loadBankTemplates() async {
@@ -57,27 +57,49 @@ class _BillsMessageState extends State<BillsMessage> {
 
   // promotional Message
 
-  Future<void> _loadPromotionalMessageList() async {
+  // Future<void> _loadPromotionalMessageList() async {
+  //   _prefs = await SharedPreferences.getInstance();
+  //   // Load promotional message list from local storage
+  //   final String? promotionalMessageJson =
+  //       _prefs.getString('promotional_message');
+  //   if (promotionalMessageJson != null) {
+  //     setState(() {
+  //       // Decode JSON and cast each element to String before adding to the Set
+  //       List<dynamic> decodedList = json.decode(promotionalMessageJson);
+  //       promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
+  //     });
+  //   }
+  // }
+
+  // Future<void> _savePromotionalMessageList() async {
+  //   // Convert Set to List before encoding
+  //   List<String> promotionalMessageListAsList = promotionalMessageList.toList();
+
+  //   // Save promotional message list to local storage
+  //   await _prefs.setString(
+  //       'promotional_message', json.encode(promotionalMessageListAsList));
+  // }
+
+  Future<void> _loadSpamMessageList() async {
     _prefs = await SharedPreferences.getInstance();
     // Load promotional message list from local storage
-    final String? promotionalMessageJson =
-        _prefs.getString('promotional_message');
-    if (promotionalMessageJson != null) {
+    final String? spamMessageJson = _prefs.getString('spam_message');
+    if (spamMessageJson != null) {
       setState(() {
         // Decode JSON and cast each element to String before adding to the Set
-        List<dynamic> decodedList = json.decode(promotionalMessageJson);
-        promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
+        List<dynamic> decodedList = json.decode(spamMessageJson);
+        spamTemplate.addAll(decodedList.map((e) => e.toString()));
       });
     }
+    print(spamTemplate);
   }
 
-  Future<void> _savePromotionalMessageList() async {
+  Future<void> _saveSpamMessageList() async {
     // Convert Set to List before encoding
-    List<String> promotionalMessageListAsList = promotionalMessageList.toList();
+    List<String> spamMessageListAsList = spamTemplate.toList();
 
     // Save promotional message list to local storage
-    await _prefs.setString(
-        'promotional_message', json.encode(promotionalMessageListAsList));
+    await _prefs.setString('spam_message', json.encode(spamMessageListAsList));
   }
 
   @override
@@ -122,8 +144,8 @@ class _BillsMessageState extends State<BillsMessage> {
               const Expanded(
                 child: Center(
                   child: Text('No Transactions Info',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
             const SizedBox(height: 10),
@@ -196,7 +218,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.124.170:8000/bank/update',
+                  'http://192.168.85.70:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -273,8 +295,8 @@ class _BillsMessageState extends State<BillsMessage> {
                   // Convert the cleaned amount string to a double
                   transactionInfo['amount'] = double.parse(cleanedAmountString);
                 } else {
-                  promotionalMessageList.add(body);
-                  await _savePromotionalMessageList();
+                  // promotionalMessageList.add(body);
+                  // await _savePromotionalMessageList();
                   return;
                   // Handle the case when amount is not captured
                   // transactionInfo['amount'] =
@@ -322,6 +344,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     return true;
                   }
                 }
+
                 return false; // Return false if no template matches
               } catch (e) {
                 print('Error while checking regex match: $e');
@@ -340,7 +363,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.124.170:8000/bank/add',
+                  'http://192.168.85.70:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -356,8 +379,18 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   await _savePromotionalMessageList();
                   //   return;
                   // }
-
+                  // print(json.decode(response.data)['data']);
                   var newTemplate = response.data['data']['template'];
+                  // if (tempMap['transactionType'] == "spam") {
+                  //   spamTemplate.add(message
+                  //       .toLowerCase()
+                  //       .split(RegExp(r'\s+'))
+                  //       .where((word) => RegExp(r'^\w+$').hasMatch(word))
+                  //       .join(' '));
+                  //   _saveSpamMessageList();
+                  //   return;
+                  // }
+                  // save as a map of bankname and template list
 
                   bankTemplates[bankName] = newTemplate;
                   await _saveBankTemplates();
@@ -381,14 +414,26 @@ class _BillsMessageState extends State<BillsMessage> {
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
                   print("the temp map $tempMap");
-                  if (tempMap['transactionType'] == 'spam' ||
-                      ['amount'].toString() == "-1" ||
-                      tempMap['transactionId'].toString() == "-1") {
-                    promotionalMessageList.add(message);
-                    await _savePromotionalMessageList();
-                    print("Invalid Map, maybe promotional message");
+                  if (tempMap['transactionType'] == "spam") {
+                    spamTemplate.add(message
+                        .toLowerCase()
+                        .split(RegExp(r'\s+'))
+                        .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
+                        .join(' '));
+                    await _saveSpamMessageList();
+                    // promotionalMessageList.add(message);
+                    // await _savePromotionalMessageList();
+                    print("spam message");
                     return;
                   }
+                  // if (tempMap['transactionType'] == 'spam' ||
+                  //     ['amount'].toString() == "-1" ||
+                  //     tempMap['transactionId'].toString() == "-1") {
+                  //   promotionalMessageList.add(message);
+                  //   await _savePromotionalMessageList();
+                  //   print("Invalid Map, maybe promotional message");
+                  //   return;
+                  // }
 
                   transactionInfo = {
                     'accountNumber': tempMap['accountNumber'],
@@ -396,7 +441,7 @@ class _BillsMessageState extends State<BillsMessage> {
                     'time': tempMap['time'],
                     'amount': tempMap['amount'],
                     'transactionId': tempMap['transactionId'],
-                    'transactionType': tempMap['isCreditOrDebit'],
+                    'transactionType': tempMap['transactionType'],
                   };
 
                   if (transactionInfo['amount'] is String) {
@@ -439,11 +484,18 @@ class _BillsMessageState extends State<BillsMessage> {
                   var bankObj = bankTemplates[bankName];
 
                   // Check if the regex pattern matches the body
+
                   if (await checkRegexMatch(bankObj, body, bankName)) {
                     createTransactionInfo(bankObj, transactionInfo, body);
                     print('Regex pattern matched for bank $bankName');
                     // Handle the matched pattern accordingly
                     return;
+                  } else if (spamTemplate.contains(body
+                      .toLowerCase()
+                      .split(RegExp(r'\s+'))
+                      .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
+                      .join(' '))) {
+                    print('spam message : $body');
                   } else {
                     print(
                         'Regex pattern did not match for bank $bankName. Wait while creating new template.');
@@ -452,7 +504,15 @@ class _BillsMessageState extends State<BillsMessage> {
                     // Check again if regex pattern matches after adding new template
                   }
                 } else {
-                  await addNewTemplate(bankName, body);
+                  if (spamTemplate.contains(body
+                      .toLowerCase()
+                      .split(RegExp(r'\s+'))
+                      .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
+                      .join(' '))) {
+                    print('spam message : $body');
+                  } else {
+                    await addNewTemplate(bankName, body);
+                  }
                   // Check again if regex pattern matches after adding new template
                 }
               } catch (e) {
@@ -465,18 +525,18 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6) {
                 header = header.substring(header.length - 6).toLowerCase();
               }
-              if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
-                String body = (messageObj.body ?? '').replaceAll('\n', ' ');
-                if ((body.toLowerCase().contains('credit') ||
-                    body.toLowerCase().contains('debit') ||
-                    body.toLowerCase().contains('credited') ||
-                    body.toLowerCase().contains('sent') ||
-                    body.toLowerCase().contains('inr') ||
-                    body.toLowerCase().contains('rs') ||
-                    body.toLowerCase().contains('received'))) {
-                  await getData(header, body);
-                }
+              // if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
+              String body = (messageObj.body ?? '').replaceAll('\n', ' ');
+              if ((body.toLowerCase().contains('credit') ||
+                  body.toLowerCase().contains('debit') ||
+                  body.toLowerCase().contains('credited') ||
+                  body.toLowerCase().contains('sent') ||
+                  body.toLowerCase().contains('inr') ||
+                  body.toLowerCase().contains('rs') ||
+                  body.toLowerCase().contains('received'))) {
+                await getData(header, body);
               }
+              // }
             }
 
             setState(() {
