@@ -27,13 +27,13 @@ class _BillsMessageState extends State<BillsMessage> {
   List<Map<String, dynamic>> _transactionInfoList = [];
   late SharedPreferences _prefs;
   final Map<String, dynamic> bankTemplates = {};
-  Set<String> promotionalMessageList = {};
+  // Set<String> promotionalMessageList = {};
   Set<String> spamTemplate = {};
   @override
   void initState() {
     super.initState();
     _loadBankTemplates(); // Load bank templates from local storage when the widget is initialized
-    _loadPromotionalMessageList(); // Load promotional message list from local storage when the widget is initialized
+    // _loadPromotionalMessageList(); // Load promotional message list from local storage when the widget is initialized
     _loadSpamMessageList();
   }
 
@@ -57,28 +57,28 @@ class _BillsMessageState extends State<BillsMessage> {
 
   // promotional Message
 
-  Future<void> _loadPromotionalMessageList() async {
-    _prefs = await SharedPreferences.getInstance();
-    // Load promotional message list from local storage
-    final String? promotionalMessageJson =
-        _prefs.getString('promotional_message');
-    if (promotionalMessageJson != null) {
-      setState(() {
-        // Decode JSON and cast each element to String before adding to the Set
-        List<dynamic> decodedList = json.decode(promotionalMessageJson);
-        promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
-      });
-    }
-  }
+  // Future<void> _loadPromotionalMessageList() async {
+  //   _prefs = await SharedPreferences.getInstance();
+  //   // Load promotional message list from local storage
+  //   final String? promotionalMessageJson =
+  //       _prefs.getString('promotional_message');
+  //   if (promotionalMessageJson != null) {
+  //     setState(() {
+  //       // Decode JSON and cast each element to String before adding to the Set
+  //       List<dynamic> decodedList = json.decode(promotionalMessageJson);
+  //       promotionalMessageList.addAll(decodedList.map((e) => e.toString()));
+  //     });
+  //   }
+  // }
 
-  Future<void> _savePromotionalMessageList() async {
-    // Convert Set to List before encoding
-    List<String> promotionalMessageListAsList = promotionalMessageList.toList();
+  // Future<void> _savePromotionalMessageList() async {
+  //   // Convert Set to List before encoding
+  //   List<String> promotionalMessageListAsList = promotionalMessageList.toList();
 
-    // Save promotional message list to local storage
-    await _prefs.setString(
-        'promotional_message', json.encode(promotionalMessageListAsList));
-  }
+  //   // Save promotional message list to local storage
+  //   await _prefs.setString(
+  //       'promotional_message', json.encode(promotionalMessageListAsList));
+  // }
 
   Future<void> _loadSpamMessageList() async {
     _prefs = await SharedPreferences.getInstance();
@@ -295,8 +295,8 @@ class _BillsMessageState extends State<BillsMessage> {
                   // Convert the cleaned amount string to a double
                   transactionInfo['amount'] = double.parse(cleanedAmountString);
                 } else {
-                  promotionalMessageList.add(body);
-                  await _savePromotionalMessageList();
+                  // promotionalMessageList.add(body);
+                  // await _savePromotionalMessageList();
                   return;
                   // Handle the case when amount is not captured
                   // transactionInfo['amount'] =
@@ -421,8 +421,8 @@ class _BillsMessageState extends State<BillsMessage> {
                         .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
                         .join(' '));
                     await _saveSpamMessageList();
-                    promotionalMessageList.add(message);
-                    await _savePromotionalMessageList();
+                    // promotionalMessageList.add(message);
+                    // await _savePromotionalMessageList();
                     print("spam message");
                     return;
                   }
