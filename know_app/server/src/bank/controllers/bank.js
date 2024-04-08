@@ -110,18 +110,18 @@ const addTemplate = async (req, res) => {
       propMap = obj.propertyMap;
       transType = obj.transactionType;
       if (transType == "spam") {
-        var result = new Bank({
-          bankName: bankName,
-          template: [
-            {
-              regexPattern: rxPattern,
-              propertyMap: propMap,
-              transactionType: transType,
-            },
-          ],
-        });
+        let msgResponse = `{
+          "amount": -1 ,
+          "accountNo": -1 ,
+          "date": -1 ,
+          "time": -1,
+          "transactionId": -1,
+          "balance": -1,
+          "transactionType": "spam"
+        }`;
+        let result = { bankName: bankName, features: msgResponse };
         return await res
-          .status(200)
+          .status(201)
           .json(responseSchema(true, "Spam message!", result));
       }
       pattern = RegExp(rxPattern);

@@ -21,12 +21,12 @@
 import 'package:flutter/material.dart';
 
 Widget buildMessageContainer(Map<String, dynamic> transactionInfo) {
-  double amount = transactionInfo['amount'];
-  String? accountNumber = transactionInfo['accountNumber'];
-  String date = transactionInfo['date'];
-  String time = transactionInfo['time'];
-  String transactionId = transactionInfo['transactionId'];
-  String type = transactionInfo['transactionType'];
+  double amount = transactionInfo['amount'] ?? 0.0;
+  String? accountNumber = transactionInfo['accountNumber'] ?? "";
+  String date = transactionInfo['date'] ?? "";
+  String time = transactionInfo['time'] ?? "";
+  String transactionId = transactionInfo['transactionId'] ?? "";
+  String type = transactionInfo['transactionType'] ?? "";
 
   return Container(
     padding: const EdgeInsets.all(10),

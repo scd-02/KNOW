@@ -29,7 +29,7 @@ class _TimePickerState extends State<TimePicker> {
             });
             widget.SetTime(time);
           },
-          child: Text("Select Time"))
+          child: const Text("Select Time"))
     ]);
   }
 }

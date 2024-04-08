@@ -31,7 +31,7 @@ class SearchBar extends StatelessWidget {
       margin: const EdgeInsets.only(top: 30, left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(boxShadow: [
         BoxShadow(
-            color: Color(0xff1D1617).withOpacity(0.11),
+            color: const Color(0xff1D1617).withOpacity(0.11),
             blurRadius: 40,
             spreadRadius: 0.0)
       ]),
@@ -39,10 +39,10 @@ class SearchBar extends StatelessWidget {
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: EdgeInsets.all(15),
+          contentPadding: const EdgeInsets.all(15),
           hintText: 'Search',
-          hintStyle: const TextStyle(color: Color(0x0ffDDDADA), fontSize: 14),
-          prefixIcon: Icon(Icons.search),
+          hintStyle: const TextStyle(color: Color(0xffdddada), fontSize: 14),
+          prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none),

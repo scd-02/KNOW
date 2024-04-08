@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:know/components/commonWidgets/app_bar.dart';
-import 'package:know/pages/billspage.dart';
 import 'package:telephony/telephony.dart';
 import 'bills/date_filter.dart';
 import 'bills/bank_names.dart';
 import 'bills/message_section.dart';
 import 'bills/total_amount_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class BillsMessage extends StatefulWidget {
   const BillsMessage({Key? key}) : super(key: key);
@@ -93,6 +91,7 @@ class _BillsMessageState extends State<BillsMessage> {
         spamTemplate.addAll(decodedList.map((e) => e.toString()));
       });
     }
+    print(spamTemplate);
   }
 
   Future<void> _saveSpamMessageList() async {
@@ -145,8 +144,8 @@ class _BillsMessageState extends State<BillsMessage> {
               const Expanded(
                 child: Center(
                   child: Text('No Transactions Info',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
             const SizedBox(height: 10),
@@ -219,7 +218,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().put(
-                  'http://192.168.124.170:8000/bank/update',
+                  'http://192.168.85.70:8000/bank/update',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -364,7 +363,7 @@ class _BillsMessageState extends State<BillsMessage> {
                 print(bankName);
                 print(message);
                 var response = await Dio().post(
-                  'http://192.168.124.170:8000/bank/add',
+                  'http://192.168.85.70:8000/bank/add',
                   data: {
                     'bankName': bankName,
                     'message': message,
@@ -380,22 +379,20 @@ class _BillsMessageState extends State<BillsMessage> {
                   //   await _savePromotionalMessageList();
                   //   return;
                   // }
-
+                  // print(json.decode(response.data)['data']);
                   var newTemplate = response.data['data']['template'];
-                  var tempMap = json.decode(newTemplate);
-                  if (tempMap['transactionType'] == "spam") {
-                    spamTemplate.add(message
-                        .toLowerCase()
-                        .split(RegExp(r'\s+'))
-                        .where((word) => RegExp(r'^\w+$').hasMatch(word))
-                        .join(' '));
-                    _saveSpamMessageList();
-                    return;
-                  }
+                  // if (tempMap['transactionType'] == "spam") {
+                  //   spamTemplate.add(message
+                  //       .toLowerCase()
+                  //       .split(RegExp(r'\s+'))
+                  //       .where((word) => RegExp(r'^\w+$').hasMatch(word))
+                  //       .join(' '));
+                  //   _saveSpamMessageList();
+                  //   return;
+                  // }
                   // save as a map of bankname and template list
 
-                  tempMap['regexPattern'] = tempMap['regexPattern'] =
-                      bankTemplates[bankName] = newTemplate;
+                  bankTemplates[bankName] = newTemplate;
                   await _saveBankTemplates();
                   var updatedBankObj = bankTemplates[bankName];
                   if (await checkRegexMatch(
@@ -417,14 +414,26 @@ class _BillsMessageState extends State<BillsMessage> {
                   // let result = { bankName: bankName, features: features };
                   var tempMap = json.decode(response.data['data']['features']);
                   print("the temp map $tempMap");
-                  if (tempMap['transactionType'] == 'spam' ||
-                      ['amount'].toString() == "-1" ||
-                      tempMap['transactionId'].toString() == "-1") {
+                  if (tempMap['transactionType'] == "spam") {
+                    spamTemplate.add(message
+                        .toLowerCase()
+                        .split(RegExp(r'\s+'))
+                        .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
+                        .join(' '));
+                    await _saveSpamMessageList();
                     promotionalMessageList.add(message);
                     await _savePromotionalMessageList();
-                    print("Invalid Map, maybe promotional message");
+                    print("spam message");
                     return;
                   }
+                  // if (tempMap['transactionType'] == 'spam' ||
+                  //     ['amount'].toString() == "-1" ||
+                  //     tempMap['transactionId'].toString() == "-1") {
+                  //   promotionalMessageList.add(message);
+                  //   await _savePromotionalMessageList();
+                  //   print("Invalid Map, maybe promotional message");
+                  //   return;
+                  // }
 
                   transactionInfo = {
                     'accountNumber': tempMap['accountNumber'],
@@ -484,7 +493,7 @@ class _BillsMessageState extends State<BillsMessage> {
                   } else if (spamTemplate.contains(body
                       .toLowerCase()
                       .split(RegExp(r'\s+'))
-                      .where((word) => RegExp(r'^\w+$').hasMatch(word))
+                      .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
                       .join(' '))) {
                     print('spam message : $body');
                   } else {
@@ -495,7 +504,15 @@ class _BillsMessageState extends State<BillsMessage> {
                     // Check again if regex pattern matches after adding new template
                   }
                 } else {
-                  await addNewTemplate(bankName, body);
+                  if (spamTemplate.contains(body
+                      .toLowerCase()
+                      .split(RegExp(r'\s+'))
+                      .where((word) => !RegExp(r'[\d\W]').hasMatch(word))
+                      .join(' '))) {
+                    print('spam message : $body');
+                  } else {
+                    await addNewTemplate(bankName, body);
+                  }
                   // Check again if regex pattern matches after adding new template
                 }
               } catch (e) {
@@ -508,18 +525,18 @@ class _BillsMessageState extends State<BillsMessage> {
               if (header.length > 6) {
                 header = header.substring(header.length - 6).toLowerCase();
               }
-              if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
-                String body = (messageObj.body ?? '').replaceAll('\n', ' ');
-                if ((body.toLowerCase().contains('credit') ||
-                    body.toLowerCase().contains('debit') ||
-                    body.toLowerCase().contains('credited') ||
-                    body.toLowerCase().contains('sent') ||
-                    body.toLowerCase().contains('inr') ||
-                    body.toLowerCase().contains('rs') ||
-                    body.toLowerCase().contains('received'))) {
-                  await getData(header, body);
-                }
+              // if (!promotionalMessageList.contains((messageObj.body ?? ''))) {
+              String body = (messageObj.body ?? '').replaceAll('\n', ' ');
+              if ((body.toLowerCase().contains('credit') ||
+                  body.toLowerCase().contains('debit') ||
+                  body.toLowerCase().contains('credited') ||
+                  body.toLowerCase().contains('sent') ||
+                  body.toLowerCase().contains('inr') ||
+                  body.toLowerCase().contains('rs') ||
+                  body.toLowerCase().contains('received'))) {
+                await getData(header, body);
               }
+              // }
             }
 
             setState(() {
